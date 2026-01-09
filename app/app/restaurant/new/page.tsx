@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState, useEffect } from "react";
-import { isValidSlug, slugify } from "@/app/lib/slug";
+import { isValidSlug, slugify } from "../../../lib/slug";
 
 type FieldErrors = Record<string, string[]>;
 
