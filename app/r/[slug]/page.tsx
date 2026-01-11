@@ -8,12 +8,15 @@ function apiBase() {
 
 async function getRestaurant(slug: string) {
   const API = apiBase();
-  const res = await fetch(`${API}/api/public/restaurants/${encodeURIComponent(slug)}`, {
+  // CORREÇÃO: URL correta é /api/restaurants/public/:slug
+  const res = await fetch(`${API}/api/restaurants/public/${encodeURIComponent(slug)}`, {
     cache: "no-store",
   });
 
   if (!res.ok) return null;
-  return res.json();
+  
+  const data = await res.json();
+  return data.restaurant; // Extrai o restaurante do objeto { restaurant: ... }
 }
 
 export default async function Page({ params }: { params: { slug: string } }) {
@@ -67,8 +70,35 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
       <section className="mt-8">
         <h2 className="text-xl font-bold">Produtos</h2>
-        <p className="mt-2 text-zinc-600">Em breve: listagem de produtos.</p>
+        
+        {restaurant.products && restaurant.products.length > 0 ? (
+          <div className="mt-4 grid gap-4">
+            {restaurant.products.map((product: any) => (
+              <div key={product.id} className="rounded-xl border border-zinc-200 bg-white p-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-semibold">{product.name}</h3>
+                    {product.description && (
+                      <p className="mt-1 text-sm text-zinc-600">{product.description}</p>
+                    )}
+                  </div>
+                  <div className="font-bold text-lg">
+                    R$ {Number(product.price).toFixed(2).replace('.', ',')}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-4 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-6 text-center">
+            <p className="text-zinc-600">Nenhum produto cadastrado ainda.</p>
+          </div>
+        )}
       </section>
+      
+      <footer className="mt-10 pt-6 border-t border-zinc-200 text-center text-sm text-zinc-500">
+        <p>Cardápio gerado por <span className="font-semibold">pronto</span></p>
+      </footer>
     </main>
   );
 }

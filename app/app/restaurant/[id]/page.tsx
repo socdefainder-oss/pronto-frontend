@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { slugify, isValidSlug } from "../../../lib/slug";
+import { slugify, isValidSlug } from "../../lib/slug";
 
 function apiBase() {
   return (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
@@ -37,6 +37,8 @@ type Restaurant = {
 };
 
 export default function RestaurantManagePage({ params }: { params: { id: string } }) {
+  console.log("DEBUG - Params ID:", params.id); // DEBUG
+  
   const API = useMemo(() => apiBase(), []);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -53,14 +55,17 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
   const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
 
-  // carregar restaurante (privado) - CORRIGIDO
+  // carregar restaurante (privado)
   useEffect(() => {
     async function run() {
+      console.log("DEBUG - Iniciando carregamento do restaurante ID:", params.id); // DEBUG
       setErr("");
       setOk("");
       setLoading(true);
 
       const t = token();
+      console.log("DEBUG - Token encontrado?", !!t); // DEBUG
+      
       if (!t) {
         setErr("Você não está logado. Faça login novamente.");
         setLoading(false);
@@ -68,27 +73,39 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
       }
 
       try {
-        const res = await fetch(`${API}/api/restaurants/${params.id}`, {
+        const url = `${API}/api/restaurants/${params.id}`;
+        console.log("DEBUG - URL da requisição:", url); // DEBUG
+        
+        const res = await fetch(url, {
           headers: { 
             Authorization: `Bearer ${t}`,
             'Content-Type': 'application/json'
           },
         });
 
-        // Verifica se a resposta está ok
+        console.log("DEBUG - Status da resposta:", res.status); // DEBUG
+        
         if (!res.ok) {
+          const errorText = await res.text();
+          console.error("DEBUG - Erro na resposta:", errorText); // DEBUG
+          
           if (res.status === 404) {
             setErr("Restaurante não encontrado ou você não tem acesso.");
           } else {
-            const text = await res.text();
-            const data = text ? JSON.parse(text) : null;
-            setErr(data?.error || data?.message || `Erro HTTP ${res.status}`);
+            try {
+              const data = errorText ? JSON.parse(errorText) : null;
+              setErr(data?.error || data?.message || `Erro HTTP ${res.status}`);
+            } catch {
+              setErr(`Erro ${res.status}: Não foi possível carregar o restaurante`);
+            }
           }
           setLoading(false);
           return;
         }
 
         const data = await res.json();
+        console.log("DEBUG - Dados recebidos:", data); // DEBUG
+        
         setRestaurant(data);
 
         // preencher formulário
@@ -97,9 +114,11 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
         setPhone(data.phone || "");
         setDescription(data.description || "");
         setAddress(data.address || "");
+        
+        console.log("DEBUG - Formulário preenchido"); // DEBUG
       } catch (error: any) {
-        console.error("Erro ao carregar restaurante:", error);
-        setErr("Falha de rede ao carregar restaurante.");
+        console.error("DEBUG - Erro ao carregar restaurante:", error);
+        setErr("Falha de rede ao carregar restaurante. Verifique sua conexão.");
       } finally {
         setLoading(false);
       }
@@ -116,6 +135,7 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
   const publicUrl = restaurant?.slug ? `/r/${restaurant.slug}` : slug ? `/r/${slug}` : "/r/seu-slug";
 
   async function handleSave() {
+    console.log("DEBUG - Iniciando salvamento"); // DEBUG
     setErr("");
     setOk("");
 
@@ -133,6 +153,8 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
       address: address.trim(),
     };
 
+    console.log("DEBUG - Payload:", payload); // DEBUG
+
     if (!payload.name) {
       setErr("Nome é obrigatório.");
       return;
@@ -145,7 +167,10 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
 
     setSaving(true);
     try {
-      const res = await fetch(`${API}/api/restaurants/${params.id}`, {
+      const url = `${API}/api/restaurants/${params.id}`;
+      console.log("DEBUG - URL PATCH:", url); // DEBUG
+      
+      const res = await fetch(url, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -154,20 +179,30 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
         body: JSON.stringify(payload),
       });
 
+      console.log("DEBUG - Status PATCH:", res.status); // DEBUG
+      
       if (!res.ok) {
-        const text = await res.text();
-        const data = text ? JSON.parse(text) : null;
-        setErr(data?.error || data?.message || `Erro HTTP ${res.status}`);
+        const errorText = await res.text();
+        console.error("DEBUG - Erro no PATCH:", errorText); // DEBUG
+        
+        try {
+          const data = errorText ? JSON.parse(errorText) : null;
+          setErr(data?.error || data?.message || `Erro HTTP ${res.status}`);
+        } catch {
+          setErr(`Erro ${res.status} ao salvar`);
+        }
         return;
       }
 
       const data = await res.json();
+      console.log("DEBUG - Dados atualizados:", data); // DEBUG
+      
       setRestaurant(data);
       setOk("✅ Restaurante atualizado com sucesso!");
       setSlugTouched(false);
     } catch (error: any) {
-      console.error("Erro ao salvar:", error);
-      setErr("Falha de rede ao salvar.");
+      console.error("DEBUG - Erro na rede:", error);
+      setErr("Falha de rede ao salvar. Verifique sua conexão.");
     } finally {
       setSaving(false);
     }
@@ -180,6 +215,9 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-300 border-t-zinc-900"></div>
           <span className="ml-3">Carregando restaurante...</span>
         </div>
+        <div className="text-center text-sm text-zinc-500">
+          ID: <code className="rounded bg-zinc-100 px-2 py-1">{params.id}</code>
+        </div>
       </main>
     );
   }
@@ -189,12 +227,23 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
       <main className="mx-auto max-w-3xl px-6 py-12">
         <h1 className="text-2xl font-bold">Gerenciar restaurante</h1>
         <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">
-          <p className="font-semibold">Erro</p>
+          <p className="font-semibold">Erro ao carregar</p>
           <p className="mt-1">{err}</p>
+          <div className="mt-3 text-sm">
+            ID do restaurante: <code className="rounded bg-red-100 px-2 py-1">{params.id}</code>
+          </div>
         </div>
-        <Link className="mt-6 inline-block rounded-xl bg-zinc-900 px-4 py-2 text-white hover:bg-zinc-800" href="/app">
-          Voltar para o app
-        </Link>
+        <div className="mt-6 flex gap-3">
+          <Link className="inline-block rounded-xl bg-zinc-900 px-4 py-2 text-white hover:bg-zinc-800" href="/app">
+            Voltar para o app
+          </Link>
+          <button 
+            onClick={() => window.location.reload()}
+            className="inline-block rounded-xl border border-zinc-300 px-4 py-2 hover:bg-zinc-50"
+          >
+            Tentar novamente
+          </button>
+        </div>
       </main>
     );
   }
@@ -223,6 +272,11 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
       {restaurant && (
         <>
           <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-6">
+            <div className="mb-4 rounded-lg bg-zinc-50 p-3">
+              <div className="text-xs text-zinc-500">ID do restaurante</div>
+              <div className="font-mono text-sm break-all">{restaurant.id}</div>
+            </div>
+            
             <div className="text-sm text-zinc-600">Cardápio público</div>
             <div className="mt-2 flex flex-wrap items-center gap-3">
               <span className="rounded-lg bg-zinc-100 px-3 py-1 font-mono">{publicUrl}</span>
@@ -233,9 +287,6 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
               >
                 Ver cardápio público
               </Link>
-              <span className="text-sm text-zinc-500">
-                ID: <code className="rounded bg-zinc-100 px-1 py-0.5">{restaurant.id}</code>
-              </span>
             </div>
 
             <div className="mt-6 grid gap-5">
