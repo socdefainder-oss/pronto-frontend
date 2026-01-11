@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { slugify, isValidSlug } from "../../../../lib/slug"; // ← CORRIGIDO: 4 níveis
+import { slugify, isValidSlug } from "../../lib/slug.tsx";
 
 function apiBase() {
   return (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
 }
 
 function token() {
+  if (typeof window === "undefined") return "";
   return (
     localStorage.getItem("token") ||
     localStorage.getItem("pronto_token") ||
