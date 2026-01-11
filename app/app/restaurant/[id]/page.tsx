@@ -53,7 +53,7 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
   const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
 
-  // carregar restaurante (privado)
+  // carregar restaurante (privado) - CORRIGIDO
   useEffect(() => {
     async function run() {
       setErr("");
@@ -69,18 +69,26 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
 
       try {
         const res = await fetch(`${API}/api/restaurants/${params.id}`, {
-          headers: { Authorization: `Bearer ${t}` },
+          headers: { 
+            Authorization: `Bearer ${t}`,
+            'Content-Type': 'application/json'
+          },
         });
 
-        const text = await res.text();
-        const data = text ? JSON.parse(text) : null;
-
+        // Verifica se a resposta está ok
         if (!res.ok) {
-          setErr(data?.message || data?.error || `Erro ao carregar (HTTP ${res.status})`);
+          if (res.status === 404) {
+            setErr("Restaurante não encontrado ou você não tem acesso.");
+          } else {
+            const text = await res.text();
+            const data = text ? JSON.parse(text) : null;
+            setErr(data?.error || data?.message || `Erro HTTP ${res.status}`);
+          }
           setLoading(false);
           return;
         }
 
+        const data = await res.json();
         setRestaurant(data);
 
         // preencher formulário
@@ -89,7 +97,8 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
         setPhone(data.phone || "");
         setDescription(data.description || "");
         setAddress(data.address || "");
-      } catch {
+      } catch (error: any) {
+        console.error("Erro ao carregar restaurante:", error);
         setErr("Falha de rede ao carregar restaurante.");
       } finally {
         setLoading(false);
@@ -136,7 +145,6 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
 
     setSaving(true);
     try {
-      // Tenta PATCH (mais comum). Se seu backend usar PUT, eu ajusto depois.
       const res = await fetch(`${API}/api/restaurants/${params.id}`, {
         method: "PATCH",
         headers: {
@@ -146,18 +154,19 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
         body: JSON.stringify(payload),
       });
 
-      const text = await res.text();
-      const data = text ? JSON.parse(text) : null;
-
       if (!res.ok) {
-        setErr(data?.message || data?.error || `Erro ao salvar (HTTP ${res.status})`);
+        const text = await res.text();
+        const data = text ? JSON.parse(text) : null;
+        setErr(data?.error || data?.message || `Erro HTTP ${res.status}`);
         return;
       }
 
+      const data = await res.json();
       setRestaurant(data);
       setOk("✅ Restaurante atualizado com sucesso!");
       setSlugTouched(false);
-    } catch {
+    } catch (error: any) {
+      console.error("Erro ao salvar:", error);
       setErr("Falha de rede ao salvar.");
     } finally {
       setSaving(false);
@@ -167,7 +176,10 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
   if (loading) {
     return (
       <main className="mx-auto max-w-3xl px-6 py-12">
-        <p>Carregando…</p>
+        <div className="flex items-center justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-300 border-t-zinc-900"></div>
+          <span className="ml-3">Carregando restaurante...</span>
+        </div>
       </main>
     );
   }
@@ -176,9 +188,12 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
     return (
       <main className="mx-auto max-w-3xl px-6 py-12">
         <h1 className="text-2xl font-bold">Gerenciar restaurante</h1>
-        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">{err}</div>
-        <Link className="mt-6 inline-block rounded-xl bg-zinc-900 px-4 py-2 text-white" href="/app">
-          Voltar
+        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">
+          <p className="font-semibold">Erro</p>
+          <p className="mt-1">{err}</p>
+        </div>
+        <Link className="mt-6 inline-block rounded-xl bg-zinc-900 px-4 py-2 text-white hover:bg-zinc-800" href="/app">
+          Voltar para o app
         </Link>
       </main>
     );
@@ -205,93 +220,104 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
         <div className="mt-6 rounded-xl border border-green-200 bg-green-50 p-4 text-green-800">{ok}</div>
       ) : null}
 
-      <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-6">
-        <div className="text-sm text-zinc-600">Cardápio público</div>
-        <div className="mt-2 flex flex-wrap items-center gap-3">
-          <span className="rounded-lg bg-zinc-100 px-3 py-1 font-mono">{publicUrl}</span>
-          <Link className="rounded-xl bg-zinc-900 px-4 py-2 text-white hover:bg-zinc-800" href={publicUrl}>
-            Ver cardápio
-          </Link>
-        </div>
-
-        <div className="mt-6 grid gap-5">
-          <label className="block">
-            <span className="text-sm font-medium">Nome</span>
-            <input
-              className="mt-2 w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-zinc-800"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Ex: Açai da Ju"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-sm font-medium">Slug (link)</span>
-            <input
-              className="mt-2 w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-zinc-800 font-mono"
-              value={slug}
-              onChange={(e) => {
-                setSlugTouched(true);
-                setSlug(slugify(e.target.value));
-              }}
-              placeholder="ex: acai-da-ju"
-            />
-            <div className="mt-2 text-sm text-zinc-600">
-              Use minúsculo, números e hífen. Ex: <b>acai-da-ju</b>
+      {restaurant && (
+        <>
+          <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-6">
+            <div className="text-sm text-zinc-600">Cardápio público</div>
+            <div className="mt-2 flex flex-wrap items-center gap-3">
+              <span className="rounded-lg bg-zinc-100 px-3 py-1 font-mono">{publicUrl}</span>
+              <Link 
+                className="rounded-xl bg-zinc-900 px-4 py-2 text-white hover:bg-zinc-800" 
+                href={publicUrl}
+                target="_blank"
+              >
+                Ver cardápio público
+              </Link>
+              <span className="text-sm text-zinc-500">
+                ID: <code className="rounded bg-zinc-100 px-1 py-0.5">{restaurant.id}</code>
+              </span>
             </div>
-          </label>
 
-          <label className="block">
-            <span className="text-sm font-medium">WhatsApp</span>
-            <input
-              className="mt-2 w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-zinc-800 font-mono"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="Ex: 11 91628-7735 (vamos salvar como 55...)"
-            />
-            <div className="mt-2 text-sm text-zinc-600">
-              Salvo como: <span className="font-mono">{normalizePhoneBR(phone) || "55..."}</span>
+            <div className="mt-6 grid gap-5">
+              <label className="block">
+                <span className="text-sm font-medium">Nome *</span>
+                <input
+                  className="mt-2 w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-zinc-800"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Ex: Açai da Ju"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium">Slug (link) *</span>
+                <input
+                  className="mt-2 w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-zinc-800 font-mono"
+                  value={slug}
+                  onChange={(e) => {
+                    setSlugTouched(true);
+                    setSlug(slugify(e.target.value));
+                  }}
+                  placeholder="ex: acai-da-ju"
+                />
+                <div className="mt-2 text-sm text-zinc-600">
+                  Use minúsculo, números e hífen. Ex: <b>acai-da-ju</b>
+                </div>
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium">WhatsApp</span>
+                <input
+                  className="mt-2 w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-zinc-800 font-mono"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Ex: 11 91628-7735 (vamos salvar como 55...)"
+                />
+                <div className="mt-2 text-sm text-zinc-600">
+                  Salvo como: <span className="font-mono">{normalizePhoneBR(phone) || "55..."}</span>
+                </div>
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium">Descrição</span>
+                <input
+                  className="mt-2 w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-zinc-800"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Ex: Venda de Açaí"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium">Endereço</span>
+                <input
+                  className="mt-2 w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-zinc-800"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Rua, número, bairro..."
+                />
+              </label>
             </div>
-          </label>
 
-          <label className="block">
-            <span className="text-sm font-medium">Descrição</span>
-            <input
-              className="mt-2 w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-zinc-800"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Ex: Venda de Açaí"
-            />
-          </label>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white hover:bg-zinc-800 disabled:opacity-60"
+              >
+                {saving ? "Salvando..." : "Salvar alterações"}
+              </button>
 
-          <label className="block">
-            <span className="text-sm font-medium">Endereço</span>
-            <input
-              className="mt-2 w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-zinc-800"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Rua, número, bairro..."
-            />
-          </label>
-        </div>
-
-        <div className="mt-7 flex flex-wrap gap-3">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white hover:bg-zinc-800 disabled:opacity-60"
-          >
-            {saving ? "Salvando..." : "Salvar alterações"}
-          </button>
-
-          <Link
-            className="rounded-xl border border-zinc-300 px-5 py-3 hover:bg-zinc-50"
-            href={`/app/restaurant/${params.id}/products`}
-          >
-            Gerenciar produtos
-          </Link>
-        </div>
-      </div>
+              <Link
+                className="rounded-xl border border-zinc-300 px-5 py-3 hover:bg-zinc-50"
+                href={`/app/restaurant/${params.id}/products`}
+              >
+                Gerenciar produtos
+              </Link>
+            </div>
+          </div>
+        </>
+      )}
     </main>
   );
 }
