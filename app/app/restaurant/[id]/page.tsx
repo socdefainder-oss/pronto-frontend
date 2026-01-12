@@ -2,7 +2,26 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { slugify, isValidSlug } from "../../lib/slug.tsx";
+
+// REMOVA O IMPORT PROBLEMÁTICO E COLE AS FUNÇÕES AQUI:
+function slugify(input: string): string {
+  if (!input) return '';
+  return input
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-+/g, '-');
+}
+
+function isValidSlug(slug: string): boolean {
+  if (!slug) return false;
+  return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) && 
+         slug.length >= 1 && 
+         slug.length <= 60;
+}
 
 function apiBase() {
   return (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
@@ -38,8 +57,8 @@ type Restaurant = {
 };
 
 export default function RestaurantManagePage({ params }: { params: { id: string } }) {
-  console.log("DEBUG - Params ID:", params.id);
-  
+  const [id, setId] = useState<string | null>(null);
+
   const API = useMemo(() => apiBase(), []);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -55,10 +74,17 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
   const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
 
+  // Extrair ID dos params
+  useEffect(() => {
+    setId(params.id);
+  }, [params.id]);
+
   // carregar restaurante
   useEffect(() => {
+    if (!id) return;
+
     async function run() {
-      console.log("DEBUG - Carregando restaurante ID:", params.id);
+      console.log("DEBUG - Carregando restaurante ID:", id);
       setErr("");
       setOk("");
       setLoading(true);
@@ -71,7 +97,7 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
       }
 
       try {
-        const url = `${API}/api/restaurants/${params.id}`;
+        const url = `${API}/api/restaurants/${id}`;
         console.log("DEBUG - URL:", url);
         
         const res = await fetch(url, {
@@ -114,7 +140,7 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
     }
 
     run();
-  }, [API, params.id]);
+  }, [API, id]);
 
   // auto-slug
   useEffect(() => {
@@ -124,6 +150,8 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
   const publicUrl = restaurant?.slug ? `/r/${restaurant.slug}` : slug ? `/r/${slug}` : "/r/seu-slug";
 
   async function handleSave() {
+    if (!id) return;
+
     setErr("");
     setOk("");
 
@@ -153,7 +181,7 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
 
     setSaving(true);
     try {
-      const res = await fetch(`${API}/api/restaurants/${params.id}`, {
+      const res = await fetch(`${API}/api/restaurants/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -312,12 +340,14 @@ export default function RestaurantManagePage({ params }: { params: { id: string 
                 {saving ? "Salvando..." : "Salvar alterações"}
               </button>
 
-              <Link
-                className="rounded-xl border border-zinc-300 px-5 py-3 hover:bg-zinc-50"
-                href={`/app/restaurant/${params.id}/products`}
-              >
-                Gerenciar produtos
-              </Link>
+              {id && (
+                <Link
+                  className="rounded-xl border border-zinc-300 px-5 py-3 hover:bg-zinc-50"
+                  href={`/app/restaurant/${id}/products`}
+                >
+                  Gerenciar produtos
+                </Link>
+              )}
             </div>
           </div>
         </>
