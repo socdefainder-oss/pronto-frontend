@@ -42,7 +42,11 @@ export default function CategoriesPage() {
   // Token function
   function getToken() {
     if (typeof window === "undefined") return "";
-    return localStorage.getItem("token") || "";
+    return (
+      localStorage.getItem("pronto_token") ||
+      localStorage.getItem("token") ||
+      ""
+    );
   }
 
   // Load data
@@ -65,25 +69,35 @@ export default function CategoriesPage() {
     }
 
     try {
+      console.log("Carregando categorias...");
       // Load categories
       const categoriesRes = await fetch(`${API_URL}/api/catalog/categories/${restaurantId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
       });
 
       if (categoriesRes.ok) {
         const data = await categoriesRes.json();
+        console.log("Categorias recebidas:", data.categories?.length || 0);
         setCategories(data.categories || []);
       } else {
         console.error("Erro ao carregar categorias:", categoriesRes.status);
       }
 
       // Load products to count per category
+      console.log("Carregando produtos...");
       const productsRes = await fetch(`${API_URL}/api/catalog/products/${restaurantId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
       });
 
       if (productsRes.ok) {
         const data = await productsRes.json();
+        console.log("Produtos recebidos:", data.products?.length || 0);
         setProducts(data.products || []);
         
         // Count products per category
@@ -97,6 +111,7 @@ export default function CategoriesPage() {
       }
 
     } catch (err: any) {
+      console.error("Erro ao carregar dados:", err);
       setError("Erro ao carregar dados: " + err.message);
     } finally {
       setLoading(false);
@@ -105,6 +120,7 @@ export default function CategoriesPage() {
 
   // Handle form
   function handleEdit(category: Category) {
+    console.log("Editando categoria:", category);
     setEditingCategory(category);
     setName(category.name);
     setSortOrder(category.sortOrder.toString());
@@ -113,6 +129,7 @@ export default function CategoriesPage() {
   }
 
   function handleCancel() {
+    console.log("Cancelando formulário");
     setShowForm(false);
     setEditingCategory(null);
     resetForm();
@@ -126,6 +143,7 @@ export default function CategoriesPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    console.log("Enviando formulário de categoria...");
     
     const token = getToken();
     if (!token) {
@@ -148,13 +166,15 @@ export default function CategoriesPage() {
       isActive,
     };
 
+    console.log("Dados da categoria:", categoryData);
+
     setError("");
     setSuccess("");
 
     try {
       if (editingCategory) {
-        // Update category - Note: Your backend might not have PATCH for categories yet
-        // We'll use POST for now, but you should add PATCH to catalog.ts
+        // Update category
+        console.log("Atualizando categoria:", editingCategory.id);
         const res = await fetch(`${API_URL}/api/catalog/categories`, {
           method: "POST",
           headers: {
@@ -163,18 +183,22 @@ export default function CategoriesPage() {
           },
           body: JSON.stringify({
             ...categoryData,
-            id: editingCategory.id // Include ID for update
+            id: editingCategory.id
           }),
         });
 
+        console.log("Status update:", res.status);
+
         if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.error || "Erro ao atualizar categoria");
+          const errorText = await res.text();
+          console.error("Erro update:", errorText);
+          throw new Error(errorText || "Erro ao atualizar categoria");
         }
         
         setSuccess("✅ Categoria atualizada com sucesso!");
       } else {
         // Create category
+        console.log("Criando nova categoria");
         const res = await fetch(`${API_URL}/api/catalog/categories`, {
           method: "POST",
           headers: {
@@ -184,9 +208,12 @@ export default function CategoriesPage() {
           body: JSON.stringify(categoryData),
         });
 
+        console.log("Status create:", res.status);
+
         if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.error || "Erro ao criar categoria");
+          const errorText = await res.text();
+          console.error("Erro create:", errorText);
+          throw new Error(errorText || "Erro ao criar categoria");
         }
         
         setSuccess("✅ Categoria criada com sucesso!");
@@ -196,11 +223,13 @@ export default function CategoriesPage() {
       loadData();
       
     } catch (err: any) {
-      setError("❌ " + err.message);
+      console.error("Erro completo:", err);
+      setError("❌ " + (err.message || "Erro ao salvar categoria"));
     }
   }
 
   async function handleDelete(categoryId: string) {
+    console.log("Tentando excluir categoria:", categoryId);
     // Check if category has products
     const categoryProducts = products.filter(p => p.categoryId === categoryId);
     if (categoryProducts.length > 0) {
@@ -217,8 +246,6 @@ export default function CategoriesPage() {
     }
 
     try {
-      // Note: Your backend needs DELETE endpoint for categories
-      // For now, we'll deactivate it
       const res = await fetch(`${API_URL}/api/catalog/categories`, {
         method: "POST",
         headers: {
@@ -232,17 +259,21 @@ export default function CategoriesPage() {
         }),
       });
 
+      console.log("Status delete:", res.status);
+
       if (!res.ok) throw new Error("Erro ao excluir categoria");
       
       setSuccess("✅ Categoria excluída com sucesso!");
       loadData();
       
     } catch (err: any) {
+      console.error("Erro delete:", err);
       setError("❌ " + err.message);
     }
   }
 
   async function handleToggleActive(categoryId: string, currentActive: boolean) {
+    console.log("Alternando ativo:", categoryId, "de", currentActive, "para", !currentActive);
     const token = getToken();
     if (!token) return;
 
@@ -260,12 +291,15 @@ export default function CategoriesPage() {
         }),
       });
 
+      console.log("Status toggle:", res.status);
+
       if (!res.ok) throw new Error("Erro ao atualizar categoria");
       
       setSuccess(`✅ Categoria ${!currentActive ? "ativada" : "desativada"} com sucesso!`);
       loadData();
       
     } catch (err: any) {
+      console.error("Erro toggle:", err);
       setError("❌ " + err.message);
     }
   }
@@ -297,6 +331,7 @@ export default function CategoriesPage() {
       loadData();
       
     } catch (err: any) {
+      console.error("Erro ao mover produtos:", err);
       setError("❌ Erro ao mover produtos: " + err.message);
     }
   }
