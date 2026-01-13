@@ -21,7 +21,12 @@ export async function api(path: string, options: RequestInit = {}) {
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(`${API_URL}${path}`, { ...options, headers, cache: "no-store" });
+  const res = await fetch(`${API_URL}${path}`, { 
+    ...options, 
+    headers, 
+    cache: "no-store",
+    credentials: 'include'
+  });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(json?.error?.message || json?.error || "Erro na API");
   return json;
