@@ -55,7 +55,11 @@ export default function ProductsPage() {
   // Token function
   function getToken() {
     if (typeof window === "undefined") return "";
-    return localStorage.getItem("token") || "";
+    return (
+      localStorage.getItem("pronto_token") ||
+      localStorage.getItem("token") ||
+      ""
+    );
   }
 
   // Load data
