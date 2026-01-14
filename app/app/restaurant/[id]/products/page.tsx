@@ -245,15 +245,11 @@ export default function ProductsPage() {
   function handleBack() {
     console.log("Voltando para gerenciar restaurante");
     const id = restaurantId || params?.id;
-    if (document.referrer) {
-      router.back();
-      return;
-    }
     if (id) {
       router.push(`/app/restaurant/${id}`);
-      return;
+    } else {
+      router.push("/app");
     }
-    router.push("/app");
   }
 
   // Loading state
