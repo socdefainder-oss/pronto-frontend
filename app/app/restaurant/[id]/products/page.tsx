@@ -129,7 +129,7 @@ export default function ProductsPage() {
     
     const token = getToken();
     if (!token) {
-      setError("Você não está logado");
+      router.push("/login");
       return;
     }
 
@@ -200,7 +200,7 @@ export default function ProductsPage() {
 
     const token = getToken();
     if (!token) {
-      setError("Você não está logado");
+      router.push("/login");
       return;
     }
 
@@ -221,7 +221,10 @@ export default function ProductsPage() {
   async function handleToggleActive(productId: string, currentActive: boolean) {
     console.log("Alternando ativo:", productId, "de", currentActive, "para", !currentActive);
     const token = getToken();
-    if (!token) return;
+    if (!token) {
+      router.push("/login");
+      return;
+    }
 
     try {
       await api(`/api/catalog/products/${productId}`, {
@@ -242,11 +245,15 @@ export default function ProductsPage() {
   function handleBack() {
     console.log("Voltando para gerenciar restaurante");
     const id = restaurantId || params?.id;
-    if (!id) {
+    if (document.referrer) {
       router.back();
       return;
     }
-    router.push(`/app/restaurant/${id}`);
+    if (id) {
+      router.push(`/app/restaurant/${id}`);
+      return;
+    }
+    router.push("/app");
   }
 
   // Loading state
@@ -276,6 +283,7 @@ export default function ProductsPage() {
         </div>
         <div className="flex gap-3">
           <button
+            type="button"
             onClick={handleBack}
             className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 transition"
           >
