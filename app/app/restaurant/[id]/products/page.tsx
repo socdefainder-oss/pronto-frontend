@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getToken } from "../../lib/api";
+import { getToken } from "../../../lib/api";
 
 type Product = {
   id: string;
