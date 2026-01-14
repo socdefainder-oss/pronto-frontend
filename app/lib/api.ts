@@ -2,7 +2,11 @@ export const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
 export function getToken() {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("pronto_token");
+  return (
+    localStorage.getItem("pronto_token") ||
+    localStorage.getItem("token") ||
+    null
+  );
 }
 
 export function setToken(token: string) {
