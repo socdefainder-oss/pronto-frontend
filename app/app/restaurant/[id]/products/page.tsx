@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { api, getToken } from "../../../../lib/api";
 import { getToken } from "../../../../lib/api";
 
 type Product = {
@@ -51,18 +52,6 @@ export default function ProductsPage() {
   const [isActive, setIsActive] = useState(true);
   const [imageUrl, setImageUrl] = useState("");
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
-
-  // Token function
-  function getToken() {
-    if (typeof window === "undefined") return "";
-    return (
-      localStorage.getItem("pronto_token") ||
-      localStorage.getItem("token") ||
-      ""
-    );
-  }
-
   // Load data
   useEffect(() => {
     if (!restaurantId) {
@@ -79,53 +68,24 @@ export default function ProductsPage() {
     setLoading(true);
     setError("");
     const token = getToken();
-    
+
     if (!token) {
-      setError("Você não está logado. Faça login novamente.");
-      setLoading(false);
+      router.push("/login");
       return;
     }
 
     try {
       console.log("Carregando produtos...");
-      // Load products
-      const productsRes = await fetch(`${API_URL}/api/catalog/products/${restaurantId}`, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+      const productsData = await api(`/api/catalog/products/${restaurantId}`, {
+        method: "GET",
       });
+      setProducts(productsData.products || []);
 
-      console.log("Status produtos:", productsRes.status);
-      
-      if (productsRes.ok) {
-        const data = await productsRes.json();
-        console.log("Produtos recebidos:", data.products?.length || 0);
-        setProducts(data.products || []);
-      } else {
-        const errorText = await productsRes.text();
-        console.error("Erro ao carregar produtos:", productsRes.status, errorText);
-        setError(`Erro ${productsRes.status} ao carregar produtos`);
-      }
-
-      // Load categories
       console.log("Carregando categorias...");
-      const categoriesRes = await fetch(`${API_URL}/api/catalog/categories/${restaurantId}`, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+      const categoriesData = await api(`/api/catalog/categories/${restaurantId}`, {
+        method: "GET",
       });
-
-      console.log("Status categorias:", categoriesRes.status);
-      
-      if (categoriesRes.ok) {
-        const data = await categoriesRes.json();
-        console.log("Categorias recebidas:", data.categories?.length || 0);
-        setCategories(data.categories || []);
-      } else {
-        console.error("Erro ao carregar categorias:", categoriesRes.status);
-      }
+      setCategories(categoriesData.categories || []);
 
     } catch (err: any) {
       console.error("Erro ao carregar dados:", err);
@@ -268,24 +228,13 @@ export default function ProductsPage() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/catalog/products/${productId}`, {
+      await api(`/api/catalog/products/${productId}`, {
         method: "DELETE",
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
       });
 
-      console.log("Status delete:", res.status);
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || "Erro ao excluir produto");
-      }
-      
       setSuccess("✅ Produto excluído com sucesso!");
       loadData();
-      
+
     } catch (err: any) {
       console.error("Erro delete:", err);
       setError("❌ " + err.message);
@@ -298,25 +247,15 @@ export default function ProductsPage() {
     if (!token) return;
 
     try {
-      const res = await fetch(`${API_URL}/api/catalog/products/${productId}`, {
+      await api(`/api/catalog/products/${productId}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({ isActive: !currentActive }),
+        headers: { "Content-Type": "application/json" },
       });
 
-      console.log("Status toggle:", res.status);
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || "Erro ao atualizar produto");
-      }
-      
       setSuccess(`✅ Produto ${!currentActive ? "ativado" : "desativado"} com sucesso!`);
       loadData();
-      
+
     } catch (err: any) {
       console.error("Erro toggle:", err);
       setError("❌ " + err.message);
@@ -327,8 +266,7 @@ export default function ProductsPage() {
     console.log("Voltando para gerenciar restaurante");
     const id = restaurantId || params?.id;
     if (!id) {
-      console.error("Restaurant ID não encontrado");
-      router.push('/app/restaurants');
+      router.back();
       return;
     }
     router.push(`/app/restaurant/${id}`);
