@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { getToken } from "../../../lib/api";
 
 type Product = {
   id: string;
@@ -47,12 +48,6 @@ export default function ProductsPage() {
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
 
-  // Token function
-  function getToken() {
-    if (typeof window === "undefined") return "";
-    return localStorage.getItem("token") || "";
-  }
-
   // Load data
   useEffect(() => {
     if (!restaurantId) return;
@@ -67,7 +62,7 @@ export default function ProductsPage() {
     const token = getToken();
     
     if (!token) {
-      setError("Você não está logado");
+      router.push("/login");
       setLoading(false);
       return;
     }
@@ -134,7 +129,7 @@ export default function ProductsPage() {
     
     const token = getToken();
     if (!token) {
-      setError("Você não está logado");
+      router.push("/login");
       return;
     }
 
@@ -213,7 +208,7 @@ export default function ProductsPage() {
 
     const token = getToken();
     if (!token) {
-      setError("Você não está logado");
+      router.push("/login");
       return;
     }
 
@@ -235,7 +230,10 @@ export default function ProductsPage() {
 
   async function handleToggleActive(productId: string, currentActive: boolean) {
     const token = getToken();
-    if (!token) return;
+    if (!token) {
+      router.push("/login");
+      return;
+    }
 
     try {
       const res = await fetch(`${API_URL}/api/catalog/products/${productId}`, {

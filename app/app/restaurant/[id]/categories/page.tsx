@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { getToken } from "../../../../lib/api";
 
 type Category = {
   id: string;
@@ -22,6 +23,7 @@ type Product = {
 
 export default function CategoriesPage() {
   const params = useParams();
+  const router = useRouter();
   const restaurantId = params?.id as string;
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -39,16 +41,6 @@ export default function CategoriesPage() {
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
 
-  // Token function
-  function getToken() {
-    if (typeof window === "undefined") return "";
-    return (
-      localStorage.getItem("pronto_token") ||
-      localStorage.getItem("token") ||
-      ""
-    );
-  }
-
   // Load data
   useEffect(() => {
     if (!restaurantId) return;
@@ -63,7 +55,7 @@ export default function CategoriesPage() {
     const token = getToken();
     
     if (!token) {
-      setError("Você não está logado");
+      router.push("/login");
       setLoading(false);
       return;
     }
@@ -147,7 +139,7 @@ export default function CategoriesPage() {
     
     const token = getToken();
     if (!token) {
-      setError("Você não está logado");
+      router.push("/login");
       return;
     }
 
@@ -241,7 +233,7 @@ export default function CategoriesPage() {
 
     const token = getToken();
     if (!token) {
-      setError("Você não está logado");
+      router.push("/login");
       return;
     }
 
@@ -275,7 +267,10 @@ export default function CategoriesPage() {
   async function handleToggleActive(categoryId: string, currentActive: boolean) {
     console.log("Alternando ativo:", categoryId, "de", currentActive, "para", !currentActive);
     const token = getToken();
-    if (!token) return;
+    if (!token) {
+      router.push("/login");
+      return;
+    }
 
     try {
       const res = await fetch(`${API_URL}/api/catalog/categories`, {
@@ -309,7 +304,10 @@ export default function CategoriesPage() {
     if (!confirm(`Mover todos os produtos desta categoria para "${categories.find(c => c.id === toCategoryId)?.name}"?`)) return;
 
     const token = getToken();
-    if (!token) return;
+    if (!token) {
+      router.push("/login");
+      return;
+    }
 
     try {
       const productsToMove = products.filter(p => p.categoryId === fromCategoryId);
