@@ -541,7 +541,6 @@ export default function ProductsPage() {
             <div>Total produtos: {products.length}</div>
             <div>Total categorias: {categories.length}</div>
             <div>Token: {getToken() ? "✅ Presente" : "❌ Ausente"}</div>
-            <div>API URL: {API_URL}</div>
           </div>
         </div>
       )}
