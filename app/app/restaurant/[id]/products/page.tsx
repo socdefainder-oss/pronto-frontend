@@ -324,7 +324,13 @@ export default function ProductsPage() {
 
   function handleBack() {
     console.log("Voltando para gerenciar restaurante");
-    router.push(`/app/restaurant/${restaurantId}`);
+    const id = restaurantId || params?.id;
+    if (!id) {
+      console.error("Restaurant ID não encontrado");
+      router.push('/app/restaurants');
+      return;
+    }
+    router.push(`/app/restaurant/${id}`);
   }
 
   // Loading state
