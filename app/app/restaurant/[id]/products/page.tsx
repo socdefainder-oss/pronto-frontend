@@ -166,44 +166,22 @@ export default function ProductsPage() {
       if (editingProduct) {
         // Update product
         console.log("Atualizando produto:", editingProduct.id);
-        const res = await fetch(`${API_URL}/api/catalog/products/${editingProduct.id}`, {
+        await api(`/api/catalog/products/${editingProduct.id}`, {
           method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(productData),
         });
 
-        console.log("Status update:", res.status);
-        
-        if (!res.ok) {
-          const errorText = await res.text();
-          console.error("Erro update:", errorText);
-          throw new Error(errorText || "Erro ao atualizar produto");
-        }
-        
         setSuccess("✅ Produto atualizado com sucesso!");
       } else {
         // Create product
         console.log("Criando novo produto");
-        const res = await fetch(`${API_URL}/api/catalog/products`, {
+        await api(`/api/catalog/products`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(productData),
         });
 
-        console.log("Status create:", res.status);
-        
-        if (!res.ok) {
-          const errorText = await res.text();
-          console.error("Erro create:", errorText);
-          throw new Error(errorText || "Erro ao criar produto");
-        }
-        
         setSuccess("✅ Produto criado com sucesso!");
       }
 
