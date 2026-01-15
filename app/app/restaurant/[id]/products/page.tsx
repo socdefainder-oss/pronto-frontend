@@ -249,15 +249,8 @@ export default function ProductsPage() {
       return;
     }
     
-    const targetUrl = `/app/restaurant/${id}`;
-    
-    // Tentar com router.push primeiro
-    try {
-      router.push(targetUrl);
-    } catch (error) {
-      // Fallback para navegação nativa
-      window.location.href = targetUrl;
-    }
+    // Navegação direta - força refresh completo da página
+    window.location.href = `/app/restaurant/${id}`;
   }
 
   // Loading state
