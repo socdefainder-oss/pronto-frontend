@@ -279,25 +279,12 @@ export default function ProductsPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              const id = restaurantId || params?.id;
-              console.log('🔘 Botão clicado! ID:', id);
-              if (!id) {
-                alert('❌ ID do restaurante não encontrado');
-                return;
-              }
-              const targetUrl = `/app/restaurant/${id}`;
-              console.log('🎯 Navegando para:', targetUrl);
-              window.location.href = targetUrl;
-            }}
+          <Link
+            href={`/app/restaurant/${restaurantId}`}
             className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 transition"
           >
-            ⬅️ Voltar [13:56:39]
-          </button>
+            ← Voltar
+          </Link>
           <button
             onClick={() => {
               console.log("Abrindo formulário novo produto");
