@@ -11,7 +11,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Health check do backend ao carregar a p�gina
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
+
+  // Health check do backend ao carregar a página
   useEffect(() => {
     const wakeUpBackend = async () => {
       try {
@@ -23,19 +25,24 @@ export default function LoginPage() {
     wakeUpBackend();
   }, []);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
+      // Timeout de 30 segundos
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
       const res = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!res.ok) {
         const data = await res.json();
@@ -45,10 +52,14 @@ export default function LoginPage() {
       const data = await res.json();
       localStorage.setItem("pronto_token", data.token);
       localStorage.setItem("pronto_user", JSON.stringify(data.user));
-      
+
       router.push("/app");
     } catch (err: any) {
-      setError(err.message);
+      if (err.name === 'AbortError') {
+        setError("Tempo de conexão esgotado. O servidor pode estar iniciando, tente novamente em alguns segundos.");
+      } else {
+        setError(err.message || "Erro ao fazer login");
+      }
     } finally {
       setLoading(false);
     }
@@ -232,5 +243,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-
