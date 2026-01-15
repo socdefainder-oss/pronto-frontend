@@ -280,10 +280,11 @@ export default function ProductsPage() {
         </div>
         <div className="flex gap-3">
           <Link
-            href={`/app/restaurant/${restaurantId}`}
-            className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 transition"
+            href={`/app/restaurant/${restaurantId || params?.id || 'erro'}`}
+            className="px-4 py-2 rounded-lg border-2 border-blue-600 bg-blue-50 text-blue-700 font-semibold hover:bg-blue-100 transition"
+            style={{ borderColor: '#2563eb' }}
           >
-            ← Voltar
+            🔙 VOLTAR [v2]
           </Link>
           <button
             onClick={() => {
