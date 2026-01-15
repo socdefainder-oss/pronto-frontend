@@ -283,13 +283,20 @@ export default function ProductsPage() {
             type="button"
             onClick={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               const id = restaurantId || params?.id;
-              if (id) window.location.href = `/app/restaurant/${id}`;
-              else alert('ID não encontrado');
+              console.log('🔘 Botão clicado! ID:', id);
+              if (!id) {
+                alert('❌ ID do restaurante não encontrado');
+                return;
+              }
+              const targetUrl = `/app/restaurant/${id}`;
+              console.log('🎯 Navegando para:', targetUrl);
+              window.location.href = targetUrl;
             }}
             className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 transition"
           >
-            ← Voltar ao restaurante
+            ⬅️ Voltar
           </button>
           <button
             onClick={() => {
