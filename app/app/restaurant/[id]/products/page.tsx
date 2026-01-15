@@ -281,7 +281,12 @@ export default function ProductsPage() {
         <div className="flex gap-3">
           <button
             type="button"
-            onClick={handleBack}
+            onClick={(e) => {
+              e.preventDefault();
+              const id = restaurantId || params?.id;
+              if (id) window.location.href = `/app/restaurant/${id}`;
+              else alert('ID não encontrado');
+            }}
             className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 transition"
           >
             ← Voltar ao restaurante
