@@ -20,6 +20,10 @@ export default function PublicRestaurantPage({ params }: { params: Promise<{ slu
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCheckout, setShowCheckout] = useState(false);
   const [orderLoading, setOrderLoading] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [couponError, setCouponError] = useState("");
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
 
   useEffect(() => {
     async function loadRestaurant() {
@@ -82,6 +86,49 @@ export default function PublicRestaurantPage({ params }: { params: Promise<{ slu
 
   const cartTotal = cart.reduce((sum, item) => sum + item.priceCents * item.quantity, 0);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const discount = appliedCoupon?.discountCents || 0;
+  const finalTotal = cartTotal - discount;
+
+  async function validateCoupon() {
+    if (!couponCode.trim()) return;
+
+    setValidatingCoupon(true);
+    setCouponError("");
+
+    try {
+      const response = await fetch(`${API_URL}/api/coupons/validate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: couponCode.toUpperCase(),
+          restaurantId: restaurant.id,
+          orderValueCents: cartTotal,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAppliedCoupon(data);
+        setCouponError("");
+      } else {
+        const error = await response.json();
+        setCouponError(error.error || "Cupom inválido");
+        setAppliedCoupon(null);
+      }
+    } catch (error) {
+      console.error("Erro ao validar cupom:", error);
+      setCouponError("Erro ao validar cupom");
+      setAppliedCoupon(null);
+    } finally {
+      setValidatingCoupon(false);
+    }
+  }
+
+  function removeCoupon() {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponError("");
+  }
 
   const handleCheckout = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -346,6 +393,72 @@ export default function PublicRestaurantPage({ params }: { params: Promise<{ slu
                 </div>
               </div>
 
+              {/* Cupom Section */}
+              <div className="border-t border-b py-4 mb-4">
+                <h3 className="font-bold text-gray-900 mb-3">Cupom de Desconto</h3>
+                {!appliedCoupon ? (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      placeholder="Digite o código do cupom"
+                      className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 uppercase"
+                    />
+                    <button
+                      type="button"
+                      onClick={validateCoupon}
+                      disabled={validatingCoupon || !couponCode.trim()}
+                      className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-teal-700 transition disabled:opacity-50"
+                    >
+                      {validatingCoupon ? "..." : "Aplicar"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4 flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-emerald-700 text-lg">{appliedCoupon.coupon.code}</div>
+                      <div className="text-sm text-emerald-600">
+                        Desconto: R$ {(appliedCoupon.discountCents / 100).toFixed(2).replace('.', ',')}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removeCoupon}
+                      className="text-red-600 hover:text-red-700 font-bold"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+                {couponError && (
+                  <div className="mt-2 text-sm text-red-600 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {couponError}
+                  </div>
+                )}
+                {appliedCoupon && (
+                  <div className="mt-4 space-y-2 text-sm">
+                    <div className="flex justify-between text-gray-600">
+                      <span>Subtotal:</span>
+                      <span>R$ {(cartTotal / 100).toFixed(2).replace('.', ',')}</span>
+                    </div>
+                    <div className="flex justify-between text-emerald-600 font-bold">
+                      <span>Desconto:</span>
+                      <span>- R$ {(appliedCoupon.discountCents / 100).toFixed(2).replace('.', ',')}</span>
+                    </div>
+                    <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t">
+                      <span>Total Final:</span>
+                      <span className="text-emerald-600">R$ {(finalTotal / 100).toFixed(2).replace('.', ',')}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Form */}
               <form onSubmit={handleCheckout} className="space-y-4">
                 <div>
@@ -409,7 +522,7 @@ export default function PublicRestaurantPage({ params }: { params: Promise<{ slu
                   disabled={orderLoading}
                   className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold py-4 rounded-xl hover:from-emerald-700 hover:to-teal-700 transition shadow-lg disabled:opacity-50"
                 >
-                  {orderLoading ? "Enviando..." : `Finalizar Pedido - R$ ${(cartTotal / 100).toFixed(2).replace('.', ',')}`}
+                  {orderLoading ? "Enviando..." : `Finalizar Pedido - R$ ${(finalTotal / 100).toFixed(2).replace('.', ',')}`}
                 </button>
               </form>
             </div>
