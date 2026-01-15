@@ -10,14 +10,19 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
 
-  // Health check do backend ao carregar a pÃ¡gina
+  // Health check MELHORADO - múltiplas tentativas paralelas para acordar mais rápido
   useEffect(() => {
     const wakeUpBackend = async () => {
       try {
-        await fetch(`${API_URL}/api/public/health`, { method: 'GET' }).catch(() => {});
+        await Promise.all([
+          fetch(`${API_URL}/api/public/health`, { method: 'GET' }).catch(() => {}),
+          fetch(`${API_URL}/api/public/health`, { method: 'GET' }).catch(() => {}),
+          fetch(`${API_URL}/api/public/health`, { method: 'GET' }).catch(() => {})
+        ]);
       } catch (e) {
         // Ignora erros do health check
       }
@@ -30,44 +35,54 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    try {
-      // Timeout de 30 segundos
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const maxRetries = 3;
+    const timeout = 60000; // 60 segundos por tentativa
 
-      const res = await fetch(`${API_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-        signal: controller.signal,
-      });
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      setRetryCount(attempt);
+      
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-      clearTimeout(timeoutId);
+        const res = await fetch(`${API_URL}/api/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+          signal: controller.signal,
+        });
 
-      if (!res.ok) {
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Erro ao fazer login");
+        }
+
         const data = await res.json();
-        throw new Error(data.error || "Erro ao fazer login");
-      }
+        localStorage.setItem("pronto_token", data.token);
+        localStorage.setItem("pronto_user", JSON.stringify(data.user));
 
-      const data = await res.json();
-      localStorage.setItem("pronto_token", data.token);
-      localStorage.setItem("pronto_user", JSON.stringify(data.user));
-
-      router.push("/app");
-    } catch (err: any) {
-      if (err.name === 'AbortError') {
-        setError("Tempo de conexÃ£o esgotado. O servidor pode estar iniciando, tente novamente em alguns segundos.");
-      } else {
-        setError(err.message || "Erro ao fazer login");
+        router.push("/app");
+        return; // Sucesso!
+      } catch (err: any) {
+        if (err.name === 'AbortError' && attempt < maxRetries) {
+          // Timeout, mas ainda há tentativas
+          await new Promise(resolve => setTimeout(resolve, 2000)); // Aguarda 2s antes de tentar novamente
+          continue;
+        } else if (err.name === 'AbortError') {
+          // Última tentativa falhou
+          setError("Servidor não respondeu após 3 tentativas (3min total). Aguarde 30 segundos e tente novamente.");
+        } else {
+          // Erro diferente de timeout (credenciais inválidas, etc)
+          setError(err.message || "Erro ao fazer login");
+          break;
+        }
       }
-    } finally {
-      setLoading(false);
     }
-  }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-6">
-      {/* Background decoration */}
+    setLoading(false);
+    setRetryCount(0);
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
@@ -182,7 +197,7 @@ export default function LoginPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Entrando...
+                  {retryCount > 0 ? `Tentativa ${retryCount}/3... Aguarde` : 'Entrando...'}
                 </span>
               ) : (
                 "Entrar"
