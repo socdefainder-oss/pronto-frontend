@@ -346,7 +346,7 @@ export default function PublicRestaurantPage({ params }: { params: Promise<{ slu
                 </div>
               )}
 
-<>
+
               {restaurant?.categories?.map((category: any) => (
                 category.products?.length > 0 && (
                   <div key={category.id} className="mb-12 last:mb-0">
