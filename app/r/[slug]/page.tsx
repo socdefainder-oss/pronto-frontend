@@ -50,6 +50,25 @@ export default function PublicRestaurantPage({ params }: { params: Promise<{ slu
     loadRestaurant();
   }, [slug]);
 
+  useEffect(() => {
+    async function loadBanners() {
+      if (!restaurant?.id) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/banners/public/${restaurant.id}/active`, { cache: "no-store" });
+        if (response.ok) {
+          const data = await response.json();
+          setBanners(data);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar banners:', error);
+      }
+    }
+
+    loadBanners();
+  }, [restaurant?.id]);
+
+
   const addToCart = (product: any) => {
     setCart(prev => {
       const existing = prev.find(item => item.productId === product.id);
@@ -301,7 +320,32 @@ export default function PublicRestaurantPage({ params }: { params: Promise<{ slu
               <p className="text-gray-600">O restaurante está organizando seus produtos.</p>
             </div>
           ) : (
-            <>
+                          {/* Banners promocionais */}
+              {banners.length > 0 && (
+                <div className="mb-8 space-y-4">
+                  {banners.map((banner) => (
+                    <div
+                      key={banner.id}
+                      className="rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition cursor-pointer transform hover:scale-[1.02] duration-200"
+                      onClick={() => banner.linkUrl && window.open(banner.linkUrl, '_blank')}
+                    >
+                      <img
+                        src={banner.imageUrl}
+                        alt={banner.title}
+                        className="w-full h-48 md:h-64 object-cover"
+                      />
+                      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-4">
+                        <h3 className="text-white font-bold text-xl">{banner.title}</h3>
+                        {banner.description && (
+                          <p className="text-emerald-50 text-sm mt-1">{banner.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+<>
               {restaurant?.categories?.map((category: any) => (
                 category.products?.length > 0 && (
                   <div key={category.id} className="mb-12 last:mb-0">
