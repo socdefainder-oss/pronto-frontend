@@ -243,19 +243,21 @@ export default function ProductsPage() {
   }
 
   function handleBack() {
-    console.log("🔙 Voltando para gerenciar restaurante");
-    console.log("📍 restaurantId:", restaurantId);
-    console.log("📍 params:", params);
-    
     const id = restaurantId || params?.id;
     if (!id) {
-      console.error("❌ Restaurant ID não encontrado");
-      router.push('/app/restaurants');
+      alert('Erro: ID do restaurante não encontrado');
       return;
     }
     
-    console.log("✅ Navegando para:", `/app/restaurant/${id}`);
-    router.push(`/app/restaurant/${id}`);
+    const targetUrl = `/app/restaurant/${id}`;
+    
+    // Tentar com router.push primeiro
+    try {
+      router.push(targetUrl);
+    } catch (error) {
+      // Fallback para navegação nativa
+      window.location.href = targetUrl;
+    }
   }
 
   // Loading state
