@@ -320,7 +320,8 @@ export default function PublicRestaurantPage({ params }: { params: Promise<{ slu
               <p className="text-gray-600">O restaurante está organizando seus produtos.</p>
             </div>
           ) : (
-                          {/* Banners promocionais */}
+            <>
+              {/* Banners promocionais */}
               {banners.length > 0 && (
                 <div className="mb-8 space-y-4">
                   {banners.map((banner) => (
