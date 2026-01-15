@@ -34,7 +34,7 @@ export default function LoginPage() {
       localStorage.setItem("pronto_token", data.token);
       localStorage.setItem("pronto_user", JSON.stringify(data.user));
       
-      router.push("/app/restaurants");
+      router.push("/app");
     } catch (err: any) {
       setError(err.message);
     } finally {
