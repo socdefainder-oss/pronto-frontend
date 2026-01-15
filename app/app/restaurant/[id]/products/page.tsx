@@ -296,7 +296,7 @@ export default function ProductsPage() {
             }}
             className="px-4 py-2 rounded-lg border border-zinc-300 hover:bg-zinc-50 transition"
           >
-            ⬅️ Voltar
+            ⬅️ Voltar [13:56:39]
           </button>
           <button
             onClick={() => {
