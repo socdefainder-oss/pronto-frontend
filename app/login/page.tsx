@@ -36,7 +36,7 @@ export default function LoginPage() {
     setError("");
 
     const maxRetries = 3;
-    const timeout = 60000; // 60 segundos por tentativa
+    const timeout = 90000; // 90 segundos por tentativa (total: 4.5min)
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       setRetryCount(attempt);
@@ -72,7 +72,7 @@ export default function LoginPage() {
           continue;
         } else if (err.name === 'AbortError') {
           // Última tentativa falhou
-          setError("Servidor não respondeu após 3 tentativas (3min total). Aguarde 30 segundos e tente novamente.");
+          setError("Servidor não respondeu após 3 tentativas (4.5min total). O backend pode estar iniciando pela primeira vez hoje. Aguarde 1 minuto e tente novamente.");
         } else {
           // Erro diferente de timeout (credenciais inválidas, etc)
           setError(err.message || "Erro ao fazer login");
