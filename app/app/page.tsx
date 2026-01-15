@@ -226,6 +226,14 @@ export default function AppHome() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
                             </svg>
                             Cupons
+                          </Link>                          <Link
+                            className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border-2 border-orange-200 text-gray-700 font-semibold hover:border-orange-500 hover:bg-orange-50 hover:text-orange-700 transition text-sm"
+                            href={`/app/restaurant/${r.id}/banners`}
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                            </svg>
+                            Banners
                           </Link>
                           <Link
                             className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:from-emerald-700 hover:to-teal-700 transition shadow-lg shadow-emerald-600/30 text-sm"
@@ -320,5 +328,6 @@ export default function AppHome() {
     </div>
   );
 }
+
 
 

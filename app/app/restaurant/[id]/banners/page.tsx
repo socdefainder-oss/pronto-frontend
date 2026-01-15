@@ -1,0 +1,490 @@
+"use client";
+
+import Link from "next/link";
+import { use, useEffect, useState } from "react";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
+
+interface Banner {
+  id: string;
+  title: string;
+  description: string | null;
+  imageUrl: string | null;
+  linkUrl: string | null;
+  backgroundColor: string;
+  textColor: string;
+  position: string;
+  sortOrder: number;
+  startDate: string | null;
+  endDate: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export default function BannersPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: restaurantId } = use(params);
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    imageUrl: "",
+    linkUrl: "",
+    backgroundColor: "#10b981",
+    textColor: "#ffffff",
+    position: "top",
+    sortOrder: "0",
+    startDate: "",
+    endDate: "",
+  });
+
+  useEffect(() => {
+    loadBanners();
+  }, [restaurantId]);
+
+  async function loadBanners() {
+    try {
+      const token = localStorage.getItem("pronto_token");
+      const response = await fetch(`${API_URL}/api/banners/restaurant/${restaurantId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setBanners(data);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar banners:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function openCreateModal() {
+    setEditingBanner(null);
+    setFormData({
+      title: "",
+      description: "",
+      imageUrl: "",
+      linkUrl: "",
+      backgroundColor: "#10b981",
+      textColor: "#ffffff",
+      position: "top",
+      sortOrder: "0",
+      startDate: "",
+      endDate: "",
+    });
+    setShowModal(true);
+  }
+
+  function openEditModal(banner: Banner) {
+    setEditingBanner(banner);
+    setFormData({
+      title: banner.title,
+      description: banner.description || "",
+      imageUrl: banner.imageUrl || "",
+      linkUrl: banner.linkUrl || "",
+      backgroundColor: banner.backgroundColor,
+      textColor: banner.textColor,
+      position: banner.position,
+      sortOrder: banner.sortOrder.toString(),
+      startDate: banner.startDate ? banner.startDate.split("T")[0] : "",
+      endDate: banner.endDate ? banner.endDate.split("T")[0] : "",
+    });
+    setShowModal(true);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    const token = localStorage.getItem("pronto_token");
+    const payload = {
+      restaurantId,
+      ...formData,
+      sortOrder: parseInt(formData.sortOrder),
+      startDate: formData.startDate || null,
+      endDate: formData.endDate || null,
+    };
+
+    try {
+      const url = editingBanner
+        ? `${API_URL}/api/banners/${editingBanner.id}`
+        : `${API_URL}/api/banners`;
+
+      const response = await fetch(url, {
+        method: editingBanner ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        loadBanners();
+      } else {
+        const error = await response.json();
+        alert(error.error || "Erro ao salvar banner");
+      }
+    } catch (error) {
+      console.error("Erro ao salvar banner:", error);
+      alert("Erro ao salvar banner");
+    }
+  }
+
+  async function toggleActive(banner: Banner) {
+    const token = localStorage.getItem("pronto_token");
+
+    try {
+      const response = await fetch(`${API_URL}/api/banners/${banner.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ isActive: !banner.isActive }),
+      });
+
+      if (response.ok) {
+        loadBanners();
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar banner:", error);
+    }
+  }
+
+  async function deleteBanner(bannerId: string) {
+    if (!confirm("Tem certeza que deseja deletar este banner?")) return;
+
+    const token = localStorage.getItem("pronto_token");
+
+    try {
+      const response = await fetch(`${API_URL}/api/banners/${bannerId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        loadBanners();
+      }
+    } catch (error) {
+      console.error("Erro ao deletar banner:", error);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="h-16 w-16 animate-spin rounded-full border-4 border-gray-200 border-t-emerald-600 mx-auto"></div>
+          <p className="mt-6 text-lg font-medium text-gray-700">Carregando banners...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 -right-40 w-96 h-96 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+      </div>
+
+      <header className="relative bg-white/80 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Link
+              href={`/app/restaurant/${restaurantId}`}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-gray-200 text-gray-700 font-semibold hover:border-emerald-500 hover:bg-emerald-50 transition"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Voltar
+            </Link>
+            <div className="h-8 w-px bg-gray-300"></div>
+            <h1 className="text-2xl font-bold text-gray-900">Banners Promocionais</h1>
+          </div>
+          <button
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-teal-700 transition shadow-lg"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Criar Banner
+          </button>
+        </div>
+      </header>
+
+      <div className="relative max-w-7xl mx-auto px-4 py-8">
+        {banners.length === 0 ? (
+          <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-200 p-16 text-center">
+            <div className="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-12 h-12 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-3">Nenhum banner criado</h3>
+            <p className="text-gray-600 mb-6">Crie banners promocionais para destacar ofertas no seu cardápio!</p>
+            <button
+              onClick={openCreateModal}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-teal-700 transition"
+            >
+              Criar Primeiro Banner
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {banners.map((banner) => (
+              <div
+                key={banner.id}
+                className={`bg-white rounded-2xl shadow-xl border-2 overflow-hidden ${
+                  banner.isActive ? "border-emerald-300" : "border-gray-300 opacity-60"
+                }`}
+              >
+                <div
+                  className="p-6"
+                  style={{
+                    backgroundColor: banner.backgroundColor,
+                    color: banner.textColor,
+                  }}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold mb-2">{banner.title}</h3>
+                      {banner.description && <p className="text-sm opacity-90">{banner.description}</p>}
+                    </div>
+                    <button
+                      onClick={() => toggleActive(banner)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold ml-4 ${
+                        banner.isActive
+                          ? "bg-white/20 backdrop-blur-sm"
+                          : "bg-gray-800/20 backdrop-blur-sm"
+                      }`}
+                    >
+                      {banner.isActive ? "Ativo" : "Inativo"}
+                    </button>
+                  </div>
+
+                  {banner.imageUrl && (
+                    <div className="mb-4">
+                      <img
+                        src={banner.imageUrl}
+                        alt={banner.title}
+                        className="w-full h-48 object-cover rounded-xl"
+                      />
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-3 text-xs opacity-75">
+                    <div className="flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Posição: {banner.position === "top" ? "Topo" : banner.position === "middle" ? "Meio" : "Final"}
+                    </div>
+                    {banner.linkUrl && (
+                      <div className="flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                        </svg>
+                        Link configurado
+                      </div>
+                    )}
+                    {banner.startDate && (
+                      <div className="flex items-center gap-1">
+                        Início: {new Date(banner.startDate).toLocaleDateString("pt-BR")}
+                      </div>
+                    )}
+                    {banner.endDate && (
+                      <div className="flex items-center gap-1">
+                        Fim: {new Date(banner.endDate).toLocaleDateString("pt-BR")}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 px-6 py-4 flex gap-2">
+                  <button
+                    onClick={() => openEditModal(banner)}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 transition"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => deleteBanner(banner.id)}
+                    className="flex items-center justify-center gap-2 px-4 py-2 border-2 border-red-200 text-red-700 font-semibold rounded-xl hover:bg-red-50 transition"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full my-8">
+            <div className="sticky top-0 bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6 rounded-t-2xl flex items-center justify-between">
+              <h2 className="text-2xl font-bold">
+                {editingBanner ? "Editar Banner" : "Criar Novo Banner"}
+              </h2>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-white hover:bg-white/20 p-2 rounded-lg"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Título *</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="Ex: Promoção de Verão!"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Descrição</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Ex: Desconto de 20% em todos os produtos"
+                  rows={3}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">URL da Imagem</label>
+                <input
+                  type="url"
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                  placeholder="https://exemplo.com/imagem.jpg"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Link de Destino</label>
+                <input
+                  type="url"
+                  value={formData.linkUrl}
+                  onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
+                  placeholder="https://exemplo.com/promo"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Cor de Fundo</label>
+                  <input
+                    type="color"
+                    value={formData.backgroundColor}
+                    onChange={(e) => setFormData({ ...formData, backgroundColor: e.target.value })}
+                    className="w-full h-12 border-2 border-gray-300 rounded-xl cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Cor do Texto</label>
+                  <input
+                    type="color"
+                    value={formData.textColor}
+                    onChange={(e) => setFormData({ ...formData, textColor: e.target.value })}
+                    className="w-full h-12 border-2 border-gray-300 rounded-xl cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Posição</label>
+                  <select
+                    value={formData.position}
+                    onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                  >
+                    <option value="top">Topo</option>
+                    <option value="middle">Meio</option>
+                    <option value="bottom">Final</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Ordem</label>
+                  <input
+                    type="number"
+                    value={formData.sortOrder}
+                    onChange={(e) => setFormData({ ...formData, sortOrder: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Data de Início</label>
+                  <input
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Data de Fim</label>
+                  <input
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-teal-700 transition shadow-lg"
+                >
+                  {editingBanner ? "Salvar Alterações" : "Criar Banner"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

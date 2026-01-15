@@ -18,6 +18,7 @@ export default function PublicRestaurantPage({ params }: { params: Promise<{ slu
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [banners, setBanners] = useState<any[]>([]);
   const [showCheckout, setShowCheckout] = useState(false);
   const [orderLoading, setOrderLoading] = useState(false);
   const [couponCode, setCouponCode] = useState("");
