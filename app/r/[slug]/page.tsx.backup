@@ -4,6 +4,7 @@ import Link from "next/link";
 import { use, useEffect, useState } from "react";
 
 export default function PublicRestaurantPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);`n  const [restaurant, setRestaurant] = useState<any>(null);`n  const [loading, setLoading] = useState(true);`n  const [error, setError] = useState<string | null>(null);
   const { slug } = use(params);
   const [restaurant, setRestaurant] = useState<any>(null);
   const [loading, setLoading] = useState(true);
