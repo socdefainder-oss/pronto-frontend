@@ -48,12 +48,12 @@ export default function RestaurantSettingsPage() {
       if (!res.ok) throw new Error("Erro ao carregar restaurante");
 
       const data = await res.json();
-      setName(data.restaurant.name || "");
-      setSlug(data.restaurant.slug || "");
-      setPhone(data.restaurant.phone || "");
-      setDescription(data.restaurant.description || "");
-      setSlogan(data.restaurant.slogan || "");
-      setAddress(data.restaurant.address || "");
+      setName(data.name || "");
+      setSlug(data.slug || "");
+      setPhone(data.phone || "");
+      setDescription(data.description || "");
+      setSlogan(data.slogan || "");
+      setAddress(data.address || "");
     } catch (err: any) {
       setError(err.message || "Erro ao carregar dados");
     } finally {
@@ -272,28 +272,30 @@ export default function RestaurantSettingsPage() {
       </div>
 
       {/* Preview Info */}
-      <div className="mt-8 bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
-        <h3 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-          </svg>
-          Visualize seu cardápio
-        </h3>
-        <p className="text-blue-800 mb-3">
-          Veja como suas alterações aparecerão para os clientes:
-        </p>
-        <Link
-          href={`/r/${slug}`}
-          target="_blank"
-          className="inline-flex items-center gap-2 bg-blue-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-blue-700 transition"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-          Abrir Cardápio Público
-        </Link>
-      </div>
+      {slug && (
+        <div className="mt-8 bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
+          <h3 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            Visualize seu cardápio
+          </h3>
+          <p className="text-blue-800 mb-3">
+            Veja como suas alterações aparecerão para os clientes:
+          </p>
+          <Link
+            href={`/r/${slug}`}
+            target="_blank"
+            className="inline-flex items-center gap-2 bg-blue-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-blue-700 transition"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+            Abrir Cardápio Público
+          </Link>
+        </div>
+      )}
     </main>
   );
 }
