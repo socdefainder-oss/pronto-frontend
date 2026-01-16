@@ -94,6 +94,7 @@ export default function RestaurantSettingsPage() {
     setSuccess("");
 
     try {
+      console.log('[Settings] Saving restaurant:', { restaurantId, logoUrl, hasLogoUrl: !!logoUrl.trim(), logoUrlLength: logoUrl.trim().length });
       const res = await fetch(`${API_URL}/api/restaurants/${restaurantId}`, {
         method: "PATCH",
         headers: {
@@ -125,6 +126,13 @@ export default function RestaurantSettingsPage() {
         throw new Error(data.error || "Erro ao salvar");
       }
 
+      const savedData = await res.json();
+      console.log('[Settings] Restaurant saved successfully:', {
+        id: savedData.id,
+        name: savedData.name,
+        logoUrl: savedData.logoUrl,
+        hasLogoUrl: !!savedData.logoUrl
+      });
       setSuccess("Configurações salvas com sucesso!");
       setTimeout(() => setSuccess(""), 3000);
     } catch (err: any) {
