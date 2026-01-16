@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { getToken } from "../../../../lib/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
 
@@ -23,13 +24,6 @@ export default function RestaurantSettingsPage() {
   const [description, setDescription] = useState("");
   const [slogan, setSlogan] = useState("");
   const [address, setAddress] = useState("");
-
-  function getToken() {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("token");
-    }
-    return null;
-  }
 
   useEffect(() => {
     if (!restaurantId) return;
