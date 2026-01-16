@@ -583,13 +583,31 @@ function ProductCard({ product, onAdd }: { product: any; onAdd: () => void }) {
   const priceInReais = (product.priceCents / 100).toFixed(2).replace('.', ',');
 
   return (
-    <div className="border-2 border-gray-200 rounded-2xl p-6 hover:shadow-xl hover:border-emerald-300 transition bg-white flex flex-col">
-      <div className="flex-1">
+    <div className="border-2 border-gray-200 rounded-2xl overflow-hidden hover:shadow-xl hover:border-emerald-300 transition bg-white flex flex-col">
+      {/* Imagem do produto */}
+      {product.imageUrl && (
+        <div className="relative w-full h-48 bg-gray-100">
+          <img 
+            src={product.imageUrl} 
+            alt={product.name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              // Se a imagem falhar ao carregar, esconde o elemento
+              e.currentTarget.style.display = 'none';
+              if (e.currentTarget.parentElement) {
+                e.currentTarget.parentElement.style.display = 'none';
+              }
+            }}
+          />
+        </div>
+      )}
+      
+      <div className="p-6 flex-1 flex flex-col">
         <h4 className="font-bold text-xl text-gray-900 mb-3">{product.name}</h4>
         {product.description && (
           <p className="text-gray-600 text-sm mb-4 line-clamp-3">{product.description}</p>
         )}
-        <div className="text-3xl font-bold text-emerald-600 mb-4">
+        <div className="text-3xl font-bold text-emerald-600 mb-4 mt-auto">
           R$ {priceInReais}
         </div>
       </div>
