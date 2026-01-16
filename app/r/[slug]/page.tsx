@@ -286,6 +286,16 @@ export default function PublicRestaurantPage({ params }: { params: Promise<{ slu
             </div>
             <div>
               <h1 className="text-4xl font-bold text-gray-900">{restaurant?.name}</h1>
+              
+              {/* Slogan motivador do restaurante */}
+              {restaurant?.slogan && (
+                <div className="mt-3 mb-2">
+                  <p className="text-2xl font-semibold text-emerald-600 italic">
+                    "{restaurant.slogan}"
+                  </p>
+                </div>
+              )}
+
               {restaurant?.description && <p className="text-gray-600 mt-1">{restaurant.description}</p>}
             </div>
           </div>
