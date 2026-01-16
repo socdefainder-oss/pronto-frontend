@@ -41,6 +41,7 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [slogan, setSlogan] = useState("");
   const [price, setPrice] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [isActive, setIsActive] = useState(true);
@@ -149,6 +150,7 @@ export default function ProductsPage() {
       restaurantId,
       name: name.trim(),
       description: description.trim() || null,
+        slogan: slogan.trim() || null,
       priceCents,
       categoryId: categoryId || null,
       isActive,
@@ -398,6 +400,24 @@ export default function ProductsPage() {
                     rows={3}
                   />
                 </div>
+
+              {/* Slogan/Tagline */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Slogan / Frase Motivadora
+                </label>
+                <input
+                  type="text"
+                  value={slogan}
+                  onChange={(e) => setSlogan(e.target.value)}
+                  className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition"
+                  placeholder='"Sabor que conquista!" ou "A melhor pizza da cidade"'
+                  maxLength={100}
+                />
+                <p className="mt-2 text-sm text-gray-500">
+                  💡 Frase curta e impactante que aparecerá em destaque no seu cardápio
+                </p>
+              </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
