@@ -123,7 +123,16 @@ export default function RestaurantSettingsPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Erro ao salvar");
+        console.error('[Settings] Save failed:', data);
+        
+        let errorMessage = "Erro ao salvar";
+        if (typeof data.error === 'string') {
+          errorMessage = data.error;
+        } else if (typeof data.error === 'object') {
+          errorMessage = JSON.stringify(data.error);
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const savedData = await res.json();
