@@ -299,7 +299,7 @@ export default function RestaurantSettingsPage() {
             />
           </div>
 
-          {/* SEÇÃO: IDENTIDADE VISUAL */}
+          {/* SEÇàO: IDENTIDADE VISUAL */}
           <div className="col-span-full pt-6 border-t-2 border-gray-200">
             <h3 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
               <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -333,7 +333,7 @@ export default function RestaurantSettingsPage() {
             )}
           </div>
 
-          {/* SEÇÃO: DADOS LEGAIS */}
+          {/* SEÇàO: DADOS LEGAIS */}
           <div className="col-span-full pt-6 border-t-2 border-gray-200">
             <h3 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
               <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -378,7 +378,7 @@ export default function RestaurantSettingsPage() {
             </div>
           </div>
 
-          {/* SEÇÃO: FUNCIONAMENTO */}
+          {/* SEÇàO: FUNCIONAMENTO */}
           <div className="col-span-full pt-6 border-t-2 border-gray-200">
             <h3 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
               <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -403,7 +403,7 @@ export default function RestaurantSettingsPage() {
             />
           </div>
 
-          {/* SEÇÃO: DELIVERY */}
+          {/* SEÇàO: DELIVERY */}
           <div className="col-span-full pt-6 border-t-2 border-gray-200">
             <h3 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
               <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -475,7 +475,7 @@ export default function RestaurantSettingsPage() {
             </div>
           </div>
 
-          {/* SEÇÃO: FORMAS DE PAGAMENTO */}
+          {/* SEÇàO: FORMAS DE PAGAMENTO */}
           <div className="col-span-full pt-6 border-t-2 border-gray-200">
             <h3 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
               <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

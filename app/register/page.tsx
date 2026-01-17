@@ -15,7 +15,7 @@ export default function RegisterPage() {
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
 
-  // Health check do backend ao carregar a pÃ¡gina
+  // Health check do backend ao carregar a página
   useEffect(() => {
     const wakeUpBackend = async () => {
       try {
@@ -33,7 +33,7 @@ export default function RegisterPage() {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("As senhas nÃ£o coincidem");
+      setError("As senhas não coincidem");
       setLoading(false);
       return;
     }
@@ -64,7 +64,7 @@ export default function RegisterPage() {
       router.push("/app");
     } catch (err: any) {
       if (err.name === 'AbortError') {
-        setError("Tempo de conexÃ£o esgotado. O servidor pode estar iniciando, tente novamente em alguns segundos.");
+        setError("Tempo de conexão esgotado. O servidor pode estar iniciando, tente novamente em alguns segundos.");
       } else {
         setError(err.message || "Erro ao criar conta");
       }
@@ -179,7 +179,7 @@ export default function RegisterPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition text-gray-900 placeholder-gray-400"
-                    placeholder="MÃ­nimo 6 caracteres"
+                    placeholder="Mínimo 6 caracteres"
                     autoComplete="new-password"
                   />
                 </div>
@@ -235,7 +235,7 @@ export default function RegisterPage() {
                 <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500">JÃ¡ tem conta?</span>
+                <span className="px-4 bg-white text-gray-500">Já tem conta?</span>
               </div>
             </div>
 
@@ -258,7 +258,7 @@ export default function RegisterPage() {
               </svg>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-1">100% grÃ¡tis</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">100% grátis</h3>
               <p className="text-sm text-gray-600">
                 Crie sua conta gratuitamente e comece a gerenciar seu delivery em minutos.
               </p>

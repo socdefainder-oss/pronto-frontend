@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -215,7 +215,7 @@ export default function LoginPage() {
                 <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500">NÃ£o tem conta?</span>
+                <span className="px-4 bg-white text-gray-500">Não tem conta?</span>
               </div>
             </div>
 
@@ -224,7 +224,7 @@ export default function LoginPage() {
               href="/register"
               className="block w-full py-3.5 text-center border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 transition"
             >
-              Criar conta grÃ¡tis
+              Criar conta grátis
             </Link>
           </form>
         </div>
@@ -238,9 +238,9 @@ export default function LoginPage() {
               </svg>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-1">Acesso rÃ¡pido</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">Acesso rápido</h3>
               <p className="text-sm text-gray-600">
-                Depois de entrar, vocÃª terÃ¡ acesso ao painel para gerenciar seus produtos, categorias e pedidos.
+                Depois de entrar, você terá acesso ao painel para gerenciar seus produtos, categorias e pedidos.
               </p>
             </div>
           </div>
