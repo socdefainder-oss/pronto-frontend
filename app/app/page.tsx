@@ -254,13 +254,6 @@ export default function AppHome() {
                             Administrar Loja
                           </Link>
                           <Link
-                            className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:from-emerald-700 hover:to-teal-700 transition shadow-lg shadow-emerald-600/30 text-sm"
-                            href={`/app/restaurant/${r.id}`}
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                            </svg>
-                          <Link
                             className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border-2 border-green-200 text-gray-700 font-semibold hover:border-green-500 hover:bg-green-50 hover:text-green-700 transition text-sm"
                             href={`/app/restaurant/${r.id}/financeiro`}
                           >
@@ -269,6 +262,13 @@ export default function AppHome() {
                             </svg>
                             Financeiro
                           </Link>
+                          <Link
+                            className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:from-emerald-700 hover:to-teal-700 transition shadow-lg shadow-emerald-600/30 text-sm"
+                            href={`/app/restaurant/${r.id}`}
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
                             Gestor de Produtos
                           </Link>
                         </div>
