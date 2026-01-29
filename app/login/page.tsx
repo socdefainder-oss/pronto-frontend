@@ -63,7 +63,12 @@ export default function LoginPage() {
         localStorage.setItem("pronto_token", data.token);
         localStorage.setItem("pronto_user", JSON.stringify(data.user));
 
-        router.push("/app");
+        // Redireciona admin para painel admin, usuários normais para /app
+        if (data.user.role === "admin") {
+          router.push("/admin/restaurants");
+        } else {
+          router.push("/app");
+        }
         return; // Sucesso!
       } catch (err: any) {
         if (err.name === 'AbortError' && attempt < maxRetries) {

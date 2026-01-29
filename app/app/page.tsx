@@ -36,17 +36,22 @@ export default function AppHome() {
   }
 
   useEffect(() => {
-    load();
-
+    // Verifica se é admin e redireciona
     try {
       const userStr = localStorage.getItem("pronto_user");
       if (userStr) {
         const user = JSON.parse(userStr);
+        if (user.role === "admin") {
+          router.push("/admin/restaurants");
+          return;
+        }
         setUserName(user.name || user.email?.split("@")[0] || "Usuário");
       }
     } catch (e) {
       console.error("Erro ao carregar usuário:", e);
     }
+
+    load();
   }, []);
 
   return (
