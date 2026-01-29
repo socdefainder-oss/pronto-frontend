@@ -137,12 +137,12 @@ export default function LoginPage() {
                   </div>
                   <input
                     id="email"
-                    type="email"
+                    type="text"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition text-gray-900 placeholder-gray-400"
-                    placeholder="seu@email.com"
+                    placeholder="seu@email.com ou admin"
                     autoComplete="email"
                   />
                 </div>
