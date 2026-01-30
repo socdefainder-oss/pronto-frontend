@@ -482,7 +482,7 @@ export default function ProductsPage() {
 
         {/* Two Column Layout */}
         <div className="grid lg:grid-cols-[380px,1fr] gap-6">
-                    {/* LEFT COLUMN - Categories */
+          {/* LEFT COLUMN - Categories */}
           <div className="lg:sticky lg:top-6 lg:self-start space-y-6">
             <div className="rounded-2xl border-2 border-gray-200 bg-white shadow-xl overflow-hidden">
               <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b-2 border-gray-200 p-6">
@@ -561,7 +561,7 @@ export default function ProductsPage() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN - Products */
+          {/* RIGHT COLUMN - Products */}
           <div className="space-y-6">
             {/* Product Form */}
             {showProductForm && (
