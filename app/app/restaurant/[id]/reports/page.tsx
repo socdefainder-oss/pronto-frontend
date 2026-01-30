@@ -257,7 +257,18 @@ export default function ReportsPage({ params }: { params: Promise<{ id: string }
               <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-             ales by Day Chart */}
+                </svg>
+              </div>
+              <span className="text-sm font-medium text-gray-600">Ticket Médio</span>
+            </div>
+            <div className="text-4xl font-bold text-gray-900 mb-2">
+              R$ {formatPrice(stats?.averageTicket || 0)}
+            </div>
+            <div className="text-sm text-gray-500">Por pedido</div>
+          </div>
+        </div>
+
+        {/* Sales by Day Chart */}
         {salesByDay.length > 0 && (
           <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-200 p-6 mb-6">
             <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
