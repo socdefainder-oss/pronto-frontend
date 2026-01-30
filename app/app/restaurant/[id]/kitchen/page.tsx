@@ -19,7 +19,7 @@ interface Order {
     phone: string;
   };
   address: {
-    neighborhood: string;
+    district: string;
     street: string;
     number: string;
   };
