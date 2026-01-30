@@ -19,7 +19,7 @@ interface Order {
     phone: string;
   };
   address: {
-    district: string;
+    neighborhood: string;
     street: string;
     number: string;
   };
@@ -28,7 +28,8 @@ interface Order {
     productName: string;
     quantity: number;
     notes: string;
-    product: {\n      category: {\n        id: string;\n        name: string;\n      } | null;
+    product: {
+      category: string;
     };
   }>;
 }
