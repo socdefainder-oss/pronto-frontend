@@ -61,8 +61,8 @@ export default function KitchenPage() {
   const fetchKitchenData = async () => {
     try {
       const [ordersData, statsData] = await Promise.all([
-        api<Order[]>(`/api/kitchen/${restaurantId}/orders?${selectedCategory ? `category=${selectedCategory}` : ""}`),
-        api<Stats>(`/api/kitchen/${restaurantId}/stats`),
+        api(`/api/kitchen/${restaurantId}/orders?${selectedCategory ? `category=${selectedCategory}` : ""}`),
+        api(`/api/kitchen/${restaurantId}/stats`),
       ]);
 
       if (ordersData.length > lastOrderCount && lastOrderCount > 0) {
