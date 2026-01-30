@@ -301,33 +301,54 @@ export default function ProductsPage() {
 
     const orderNum = parseInt(categorySortOrder) || 0;
 
-    const categoryData = {
-      restaurantId,
-      name: categoryName.trim(),
-      sortOrder: orderNum,
-      isActive: categoryIsActive,
-      ...(editingCategory && { id: editingCategory.id }),
-    };
-
     setError("");
     setSuccess("");
 
     try {
-      const res = await fetch(`${API_URL}/api/catalog/categories`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(categoryData),
-      });
+      if (editingCategory) {
+        // Atualizar categoria existente
+        const res = await fetch(`${API_URL}/api/catalog/categories/${editingCategory.id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: categoryName.trim(),
+            sortOrder: orderNum,
+            isActive: categoryIsActive,
+          }),
+        });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || "Erro ao salvar categoria");
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(errorText || "Erro ao atualizar categoria");
+        }
+
+        setSuccess("Categoria atualizada com sucesso!");
+      } else {
+        // Criar nova categoria
+        const res = await fetch(`${API_URL}/api/catalog/categories`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            restaurantId,
+            name: categoryName.trim(),
+            sortOrder: orderNum,
+            isActive: categoryIsActive,
+          }),
+        });
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(errorText || "Erro ao criar categoria");
+        }
+
+        setSuccess("Categoria criada com sucesso!");
       }
-
-      setSuccess(editingCategory ? "Categoria atualizada com sucesso!" : "Categoria criada com sucesso!");
       handleCancelCategory();
       loadData();
 
@@ -352,17 +373,9 @@ export default function ProductsPage() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/catalog/categories`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          restaurantId,
-          id: categoryId,
-          isActive: false
-        }),
+      const res = await fetch(`${API_URL}/api/catalog/categories/${categoryId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!res.ok) throw new Error("Erro ao excluir categoria");
@@ -383,15 +396,13 @@ export default function ProductsPage() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/catalog/categories`, {
-        method: "POST",
+      const res = await fetch(`${API_URL}/api/catalog/categories/${categoryId}`, {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          restaurantId,
-          id: categoryId,
           isActive: !currentActive
         }),
       });
