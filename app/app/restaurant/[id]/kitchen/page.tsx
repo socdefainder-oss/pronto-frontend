@@ -129,7 +129,7 @@ export default function KitchenPage() {
   const categories = Array.from(
     new Set(
       orders.flatMap((order) =>
-        order.items.map((item) => item.product.category?.name)
+        order.items.map((item) => item.product.category?.name).filter((name): name is string => !!name)
       )
     )
   );
