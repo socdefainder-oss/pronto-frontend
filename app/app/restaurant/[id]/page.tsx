@@ -500,21 +500,21 @@ export default function ProductsPage() {
         )}
 
         {/* Two Column Layout */}
-        <div className="grid lg:grid-cols-[380px,1fr] gap-6">
+        <div className="grid lg:grid-cols-[320px,1fr] gap-6">
           {/* LEFT COLUMN - Categories */}
           <div className="lg:sticky lg:top-6 lg:self-start space-y-6">
             <div className="rounded-2xl border-2 border-gray-200 bg-white shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b-2 border-gray-200 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-1">Categorias</h2>
-                <p className="text-sm text-gray-600">{categories.length} categorias</p>
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b-2 border-gray-200 p-4">
+                <h2 className="text-lg font-bold text-gray-900 mb-0.5">Categorias</h2>
+                <p className="text-xs text-gray-600">{categories.length} categorias</p>
               </div>
 
-              <div className="p-4">
+              <div className="p-3">
                 <button
                   onClick={() => setShowCategoryModal(true)}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold hover:from-purple-700 hover:to-indigo-700 transition shadow-lg shadow-purple-600/30"
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-bold hover:from-purple-700 hover:to-indigo-700 transition shadow-lg shadow-purple-600/30"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                   Nova Categoria
@@ -583,33 +583,33 @@ export default function ProductsPage() {
                         </div>
                         <button
                           onClick={() => handleToggleCategoryActive(cat.id, cat.isActive)}
-                          className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                             cat.isActive ? 'bg-green-500' : 'bg-red-500'
                           }`}
                           title={cat.isActive ? "Ativo" : "Inativo"}
                         >
                           <span
-                            className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                               cat.isActive ? 'translate-x-6' : 'translate-x-1'
                             }`}
                           />
                         </button>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-1.5">
                         <button
                           onClick={() => handleEditCategory(cat)}
-                          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg border-2 border-gray-200 text-xs text-gray-700 font-semibold hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 transition"
+                          className="flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded-lg border border-gray-200 text-xs text-gray-700 font-medium hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 transition"
                         >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                           Editar
                         </button>
                         <button
                           onClick={() => handleDeleteCategory(cat.id)}
-                          className="flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-red-50 border-2 border-red-200 text-xs text-red-700 font-semibold hover:bg-red-100 transition"
+                          className="flex items-center justify-center gap-1 px-2 py-1 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700 font-medium hover:bg-red-100 transition"
                         >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                           Excluir
@@ -742,7 +742,7 @@ export default function ProductsPage() {
 
             {/* Products List */}
             <div className="rounded-2xl border-2 border-gray-200 bg-white overflow-hidden shadow-xl">
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200 p-6">
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200 p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900">
@@ -811,47 +811,47 @@ export default function ProductsPage() {
                             <p className="text-gray-600 mb-3">{product.description}</p>
                           )}
 
-                          <div className="flex items-center gap-4">
-                            <span className="text-2xl font-bold text-emerald-600">
+                          <div className="flex items-center gap-3">
+                            <span className="text-xl font-bold text-emerald-600">
                               R$ {(product.priceCents / 100).toFixed(2).replace('.', ',')}
                             </span>
 
                             {product.categoryId && (
-                              <span className="px-3 py-1 bg-gray-100 rounded-lg text-sm font-medium text-gray-700 border border-gray-200">
+                              <span className="px-2 py-0.5 bg-gray-100 rounded-lg text-xs font-medium text-gray-700 border border-gray-200">
                                 {categories.find(c => c.id === product.categoryId)?.name || "Categoria"}
                               </span>
                             )}
                           </div>
                         </div>
 
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1.5">
                           <button
                             onClick={() => handleEditProduct(product)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-gray-200 text-gray-700 font-semibold hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 transition"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 text-xs font-semibold hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 transition"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
                             Editar
                           </button>
                           <button
                             onClick={() => handleToggleProductActive(product.id, product.isActive)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition ${
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                               product.isActive
-                                ? "bg-amber-50 text-amber-700 border-2 border-amber-200 hover:bg-amber-100"
-                                : "bg-green-50 text-green-700 border-2 border-green-200 hover:bg-green-100"
+                                ? "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
+                                : "bg-green-50 text-green-700 border border-green-200 hover:bg-green-100"
                             }`}
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                             </svg>
                             {product.isActive ? "Desativar" : "Ativar"}
                           </button>
                           <button
                             onClick={() => handleDeleteProduct(product.id)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 text-red-700 font-semibold border-2 border-red-200 hover:bg-red-100 transition"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-700 text-xs font-semibold border border-red-200 hover:bg-red-100 transition"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                             Excluir
