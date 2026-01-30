@@ -790,5 +790,94 @@ export default function ProductsPage() {
             </div>
           </div>
         </div>
-
       </main>
+
+      {/* Category Modal */}
+      {showCategoryModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b-2 border-gray-200 p-6">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {editingCategory ? "✏️ Editar Categoria" : "✨ Nova Categoria"}
+              </h2>
+            </div>
+
+            <form onSubmit={handleSubmitCategory} className="p-6 space-y-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Nome da categoria *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={categoryName}
+                  onChange={(e) => setCategoryName(e.target.value)}
+                  className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition"
+                  placeholder="Ex: Açaís, Sucos, Lanches..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Ordem de exibição
+                </label>
+                <input
+                  type="number"
+                  value={categorySortOrder}
+                  onChange={(e) => setCategorySortOrder(e.target.value)}
+                  className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition"
+                  placeholder="0"
+                />
+                <p className="mt-2 text-xs text-gray-500">
+                  Menor número aparece primeiro no cardápio
+                </p>
+              </div>
+
+              <div>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={categoryIsActive}
+                    onChange={(e) => setCategoryIsActive(e.target.checked)}
+                    className="w-5 h-5 rounded border-2 border-gray-300 text-purple-600 focus:ring-purple-500"
+                  />
+                  <span className="font-semibold text-gray-700">Categoria ativa</span>
+                </label>
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t-2 border-gray-100">
+                <button
+                  type="submit"
+                  className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold hover:from-purple-700 hover:to-indigo-700 transition shadow-lg shadow-purple-600/30"
+                >
+                  {editingCategory ? "Atualizar" : "Criar"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancelCategory}
+                  className="px-6 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-semibold hover:border-gray-300 hover:bg-gray-50 transition"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+      `}</style>
+    </div>
+  );
+}
