@@ -560,7 +560,6 @@ export default function ProductsPage() {
               </div>
             </div>
           </div>
-        </div>
 
           {/* RIGHT COLUMN - Products */
           <div className="space-y-6">
@@ -790,5 +789,6 @@ export default function ProductsPage() {
               )}
             </div>
           </div>
+        </div>
 
-          </main>
+      </main>
