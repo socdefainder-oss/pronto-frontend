@@ -53,6 +53,14 @@ export default function ProductsPage() {
   const [categoryName, setCategoryName] = useState("");
   const [categorySortOrder, setCategorySortOrder] = useState("0");
   const [categoryIsActive, setCategoryIsActive] = useState(true);
+  
+  // Filter state
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  
+  // Filtrar produtos baseado na categoria selecionada
+  const filteredProducts = selectedCategoryId
+    ? products.filter(p => p.categoryId === selectedCategoryId)
+    : products;
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
 
@@ -514,6 +522,28 @@ export default function ProductsPage() {
               </div>
 
               <div className="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
+                {/* Botão "Todas as categorias" */}
+                <button
+                  onClick={() => setSelectedCategoryId(null)}
+                  className={`w-full p-4 text-left hover:bg-purple-50 transition ${
+                    selectedCategoryId === null ? 'bg-purple-100 border-l-4 border-purple-600' : ''
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className={`font-bold ${selectedCategoryId === null ? 'text-purple-900' : 'text-gray-900'}`}>
+                        📋 Todas as Categorias
+                      </h3>
+                      <p className="text-xs text-gray-500">{products.length} produtos no total</p>
+                    </div>
+                    {selectedCategoryId === null && (
+                      <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    )}
+                  </div>
+                </button>
+
                 {categories.length === 0 ? (
                   <div className="px-6 py-12 text-center">
                     <div className="w-12 h-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center mx-auto mb-3">
@@ -525,7 +555,27 @@ export default function ProductsPage() {
                   </div>
                 ) : (
                   categories.map((cat) => (
-                    <div key={cat.id} className="p-4 hover:bg-gray-50 transition">
+                    <div key={cat.id} className={`p-4 transition ${
+                      selectedCategoryId === cat.id ? 'bg-purple-100 border-l-4 border-purple-600' : 'hover:bg-gray-50'
+                    }`}>
+                      <button
+                        onClick={() => setSelectedCategoryId(cat.id)}
+                        className="w-full text-left mb-3"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex-1">
+                            <h3 className={`font-bold ${selectedCategoryId === cat.id ? 'text-purple-900' : 'text-gray-900'}`}>
+                              {cat.name}
+                            </h3>
+                            <p className="text-xs text-gray-500">{cat.productCount || 0} produtos</p>
+                          </div>
+                          {selectedCategoryId === cat.id && (
+                            <svg className="w-5 h-5 text-purple-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          )}
+                        </div>
+                      </button>
                       <div className="flex items-center justify-between gap-3 mb-3">
                         <div className="flex-1">
                           <h3 className="font-bold text-gray-900">{cat.name}</h3>
@@ -695,9 +745,17 @@ export default function ProductsPage() {
               <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200 p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Produtos</h2>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      Produtos
+                      {selectedCategoryId && (
+                        <span className="ml-3 text-lg font-semibold text-purple-600">
+                          • {categories.find(c => c.id === selectedCategoryId)?.name}
+                        </span>
+                      )}
+                    </h2>
                     <p className="mt-1 text-gray-600">
-                      {products.length} {products.length === 1 ? "produto" : "produtos"}
+                      {filteredProducts.length} {filteredProducts.length === 1 ? "produto" : "produtos"}
+                      {selectedCategoryId && ` nesta categoria`}
                     </p>
                   </div>
                   {!showProductForm && (
@@ -714,19 +772,25 @@ export default function ProductsPage() {
                 </div>
               </div>
 
-              {products.length === 0 ? (
+              {filteredProducts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16">
                   <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mb-4">
                     <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Nenhum produto cadastrado</h3>
-                  <p className="text-gray-600">Clique em "Novo Produto" para começar</p>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                    {selectedCategoryId ? "Nenhum produto nesta categoria" : "Nenhum produto cadastrado"}
+                  </h3>
+                  <p className="text-gray-600">
+                    {selectedCategoryId 
+                      ? "Crie um novo produto e associe a esta categoria" 
+                      : "Clique em \"Novo Produto\" para começar"}
+                  </p>
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100">
-                  {products.map((product) => (
+                  {filteredProducts.map((product) => (
                     <div key={product.id} className="p-6 hover:bg-gray-50 transition">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
