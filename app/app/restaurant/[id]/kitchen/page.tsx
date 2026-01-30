@@ -28,8 +28,7 @@ interface Order {
     productName: string;
     quantity: number;
     notes: string;
-    product: {
-      category: string;
+    product: {\n      category: {\n        id: string;\n        name: string;\n      } | null;
     };
   }>;
 }
@@ -129,7 +128,7 @@ export default function KitchenPage() {
   const categories = Array.from(
     new Set(
       orders.flatMap((order) =>
-        order.items.map((item) => item.product.category)
+        order.items.map((item) => item.product.category?.name)
       )
     )
   );
@@ -348,7 +347,7 @@ function OrderCard({
               <span className="font-medium text-gray-900">
                 {item.quantity}x {item.productName}
               </span>
-              <span className="text-xs text-gray-500">{item.product.category}</span>
+              <span className="text-xs text-gray-500">{item.product.category?.name}</span>
             </div>
             {item.notes && (
               <div className="text-xs text-gray-600 italic mt-1">Obs: {item.notes}</div>
