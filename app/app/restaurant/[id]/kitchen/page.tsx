@@ -19,7 +19,7 @@ interface Order {
     phone: string;
   };
   address: {
-    neighborhood: string;
+    district: string;
     street: string;
     number: string;
   };
@@ -29,7 +29,10 @@ interface Order {
     quantity: number;
     notes: string;
     product: {
-      category: string;
+      category: {
+        id: string;
+        name: string;
+      } | null;
     };
   }>;
 }
@@ -337,7 +340,7 @@ function OrderCard({
 
       <div className="mb-3 text-sm">
         <div className="font-semibold text-gray-900">{order.customer.name}</div>
-        <div className="text-gray-600">{order.address.neighborhood}</div>
+        <div className="text-gray-600">{order.address.district}</div>
         <div className="text-gray-500 text-xs">{order.customer.phone}</div>
       </div>
 
