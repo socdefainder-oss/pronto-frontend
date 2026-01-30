@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getToken } from "../../../lib/api.js";
+import { getToken } from "../../../lib/api";
 
 type Product = {
   id: string;
@@ -881,3 +881,4 @@ export default function ProductsPage() {
     </div>
   );
 }
+
