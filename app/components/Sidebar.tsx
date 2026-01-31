@@ -2,12 +2,16 @@
 
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
+import { useState } from "react";
 import { clearToken } from "../lib/api";
 
 export default function Sidebar() {
   const params = useParams();
   const pathname = usePathname();
   const restaurantId = params?.id as string;
+  const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>({
+    "Administrar Loja": true,
+  });
 
   const menuItems = [
     {
@@ -77,6 +81,16 @@ export default function Sidebar() {
         </svg>
       ),
       href: `/app/restaurant/${restaurantId}/settings`,
+      hasDropdown: true,
+      subItems: [
+        { label: "Dados da loja", href: `/app/restaurant/${restaurantId}/settings?tab=dados` },
+        { label: "Horários", href: `/app/restaurant/${restaurantId}/settings?tab=horarios` },
+        { label: "Entrega", href: `/app/restaurant/${restaurantId}/settings?tab=entrega` },
+        { label: "Pagamento", href: `/app/restaurant/${restaurantId}/settings?tab=pagamento` },
+        { label: "Motoboys", href: `/app/restaurant/${restaurantId}/settings?tab=motoboys` },
+        { label: "Impressão", href: `/app/restaurant/${restaurantId}/settings?tab=impressao` },
+        { label: "Usuários", href: `/app/restaurant/${restaurantId}/settings?tab=usuarios` },
+      ],
     },
     {
       label: "Financeiro",
@@ -127,6 +141,13 @@ export default function Sidebar() {
     return subItems?.some(item => pathname === item.href);
   };
 
+  const toggleMenu = (label: string) => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [label]: !prev[label]
+    }));
+  };
+
   return (
     <aside className="w-64 bg-white border-r border-gray-200 flex flex-col min-h-screen">
       {/* Logo */}
@@ -144,38 +165,88 @@ export default function Sidebar() {
         <ul className="space-y-1">
           {menuItems.map((item) => {
             const active = isActive(item.href) || hasActiveSubItem(item.subItems);
+            const isExpanded = expandedMenus[item.label];
+            
             return (
               <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                    active
-                      ? "bg-emerald-50 text-emerald-700 font-semibold"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <span className={active ? "text-emerald-600" : "text-gray-500"}>
-                    {item.icon}
-                  </span>
-                  <span className="text-sm">{item.label}</span>
-                </Link>
-                {item.subItems && hasActiveSubItem(item.subItems) && (
-                  <ul className="ml-8 mt-1 space-y-1">
-                    {item.subItems.map((subItem) => (
-                      <li key={subItem.href}>
-                        <Link
-                          href={subItem.href}
-                          className={`block px-4 py-2 text-sm rounded-lg transition-colors ${
-                            isActive(subItem.href)
-                              ? "bg-emerald-50 text-emerald-700 font-medium"
-                              : "text-gray-600 hover:bg-gray-50"
-                          }`}
-                        >
-                          {subItem.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+                {item.hasDropdown ? (
+                  <>
+                    <button
+                      onClick={() => toggleMenu(item.label)}
+                      className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-colors ${
+                        active
+                          ? "bg-emerald-50 text-emerald-700 font-semibold"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className={active ? "text-emerald-600" : "text-gray-500"}>
+                          {item.icon}
+                        </span>
+                        <span className="text-sm">{item.label}</span>
+                      </div>
+                      <svg
+                        className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-0' : '-rotate-90'}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {isExpanded && item.subItems && (
+                      <ul className="ml-8 mt-1 space-y-1">
+                        {item.subItems.map((subItem) => (
+                          <li key={subItem.href}>
+                            <Link
+                              href={subItem.href}
+                              className={`block px-4 py-2 text-sm rounded-lg transition-colors ${
+                                pathname.includes('settings')
+                                  ? "text-emerald-700 hover:bg-emerald-50"
+                                  : "text-gray-600 hover:bg-gray-50"
+                              }`}
+                            >
+                              {subItem.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href={item.href}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                        active
+                          ? "bg-emerald-50 text-emerald-700 font-semibold"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <span className={active ? "text-emerald-600" : "text-gray-500"}>
+                        {item.icon}
+                      </span>
+                      <span className="text-sm">{item.label}</span>
+                    </Link>
+                    {item.subItems && hasActiveSubItem(item.subItems) && (
+                      <ul className="ml-8 mt-1 space-y-1">
+                        {item.subItems.map((subItem) => (
+                          <li key={subItem.href}>
+                            <Link
+                              href={subItem.href}
+                              className={`block px-4 py-2 text-sm rounded-lg transition-colors ${
+                                isActive(subItem.href)
+                                  ? "bg-emerald-50 text-emerald-700 font-medium"
+                                  : "text-gray-600 hover:bg-gray-50"
+                              }`}
+                            >
+                              {subItem.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
                 )}
               </li>
             );
