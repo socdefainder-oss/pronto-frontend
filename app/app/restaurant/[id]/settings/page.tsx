@@ -19,7 +19,7 @@ export default function RestaurantSettingsPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [activeSection, setActiveSection] = useState<Section>('dados');
-  const [menuOpen, setMenuOpen] = useState(true);
+  const [adminMenuOpen, setAdminMenuOpen] = useState(true);
 
   // Form fields - Dados da Loja
   const [name, setName] = useState("");
@@ -130,13 +130,13 @@ export default function RestaurantSettingsPage() {
   }
 
   const menuItems = [
-    { id: 'dados' as Section, label: 'Dados da Loja', icon: '' },
-    { id: 'horarios' as Section, label: 'Horários', icon: '' },
-    { id: 'entrega' as Section, label: 'Entrega', icon: '' },
-    { id: 'pagamento' as Section, label: 'Pagamento', icon: '' },
-    { id: 'motoboys' as Section, label: 'Motoboys', icon: '' },
-    { id: 'impressao' as Section, label: 'Impressão', icon: '' },
-    { id: 'usuarios' as Section, label: 'Usuários', icon: '' },
+    { id: 'dados' as Section, label: 'Dados da loja' },
+    { id: 'horarios' as Section, label: 'Horários' },
+    { id: 'entrega' as Section, label: 'Entrega' },
+    { id: 'pagamento' as Section, label: 'Pagamento' },
+    { id: 'motoboys' as Section, label: 'Motoboys' },
+    { id: 'impressao' as Section, label: 'Impressão' },
+    { id: 'usuarios' as Section, label: 'Usuários' },
   ];
 
   return (
@@ -159,7 +159,7 @@ export default function RestaurantSettingsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                 </div>
-                Administração da Loja
+                Configurações
               </h1>
               <p className="mt-2 text-gray-600">
                 Configure as informações e preferências do seu restaurante
@@ -205,13 +205,19 @@ export default function RestaurantSettingsPage() {
           {/* LEFT - Menu */}
           <div className="space-y-4">
             <div className="rounded-2xl border-2 border-gray-200 bg-white shadow-xl overflow-hidden">
+              {/* Administrar Loja - Main Item */}
               <button
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-gray-200 hover:from-blue-100 hover:to-indigo-100 transition"
+                onClick={() => setAdminMenuOpen(!adminMenuOpen)}
+                className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-150 transition"
               >
-                <h2 className="text-lg font-bold text-gray-900">Menu</h2>
+                <div className="flex items-center gap-3">
+                  <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  <span className="text-sm font-bold text-gray-900">Administrar loja</span>
+                </div>
                 <svg
-                  className={`w-5 h-5 text-gray-600 transition-transform ${menuOpen ? 'rotate-180' : ''}`}
+                  className={`w-4 h-4 text-gray-600 transition-transform ${adminMenuOpen ? '' : '-rotate-90'}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -220,27 +226,20 @@ export default function RestaurantSettingsPage() {
                 </svg>
               </button>
 
-              {menuOpen && (
-                <nav className="divide-y divide-gray-100">
+              {/* Submenu Items */}
+              {adminMenuOpen && (
+                <nav className="bg-white">
                   {menuItems.map((item) => (
                     <button
                       key={item.id}
                       onClick={() => setActiveSection(item.id)}
-                      className={`w-full text-left px-4 py-3 transition ${
+                      className={`w-full text-left px-6 py-2.5 transition text-sm ${
                         activeSection === item.id
-                          ? 'bg-blue-100 border-l-4 border-blue-600 text-blue-900 font-semibold'
-                          : 'hover:bg-gray-50 text-gray-700'
+                          ? 'text-red-600 font-medium bg-red-50'
+                          : 'text-gray-600 hover:bg-gray-50'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="text-xl">{item.icon}</span>
-                        <span className="text-sm">{item.label}</span>
-                        {activeSection === item.id && (
-                          <svg className="w-4 h-4 ml-auto text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        )}
-                      </div>
+                      {item.label}
                     </button>
                   ))}
                 </nav>
@@ -250,171 +249,195 @@ export default function RestaurantSettingsPage() {
 
           {/* RIGHT - Content */}
           <div className="space-y-6">
-            {/* Dados da Loja */}
-            {activeSection === 'dados' && (
-              <div className="rounded-2xl border-2 border-gray-200 bg-white p-8 shadow-xl">
-                <h2 className="text-2xl font-bold mb-6 text-gray-900 flex items-center gap-3">
-                  <span className="text-3xl"></span>
-                  Dados da Loja
-                </h2>
-
-                <form onSubmit={handleSaveDados} className="space-y-6">
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Nome do Restaurante *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
-                        placeholder="Ex: Restaurante do João"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Slug (URL) *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={slug}
-                        onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                        className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
-                        placeholder="restaurante-do-joao"
-                      />
-                      <p className="mt-2 text-xs text-gray-500">
-                        Seu cardápio: pronto.app/r/{slug || "seu-slug"}
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Telefone
-                      </label>
-                      <input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
-                        placeholder="(11) 98765-4321"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        E-mail
-                      </label>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
-                        placeholder="contato@restaurante.com"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        CNPJ
-                      </label>
-                      <input
-                        type="text"
-                        value={cnpj}
-                        onChange={(e) => setCnpj(e.target.value)}
-                        className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
-                        placeholder="00.000.000/0000-00"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        URL do Logo
-                      </label>
-                      <input
-                        type="url"
-                        value={logoUrl}
-                        onChange={(e) => setLogoUrl(e.target.value)}
-                        className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
-                        placeholder="https://..."
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Endereço
-                      </label>
-                      <input
-                        type="text"
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
-                        placeholder="Rua, número, bairro, cidade - UF"
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Slogan
-                      </label>
-                      <input
-                        type="text"
-                        value={slogan}
-                        onChange={(e) => setSlogan(e.target.value)}
-                        className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
-                        placeholder="Ex: A melhor comida da região!"
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Descrição
-                      </label>
-                      <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition resize-none"
-                        placeholder="Descreva seu restaurante..."
-                        rows={4}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3 pt-4 border-t-2 border-gray-100">
+            <div className="rounded-2xl border-2 border-gray-200 bg-white shadow-xl overflow-hidden">
+              {/* Tabs Navigation */}
+              <div className="border-b border-gray-200 bg-white">
+                <nav className="flex overflow-x-auto">
+                  {menuItems.map((item) => (
                     <button
-                      type="submit"
-                      disabled={saving}
-                      className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold hover:from-blue-700 hover:to-indigo-700 transition shadow-lg shadow-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                      key={item.id}
+                      onClick={() => setActiveSection(item.id)}
+                      className={`px-6 py-3 text-sm font-medium whitespace-nowrap transition border-b-2 ${
+                        activeSection === item.id
+                          ? 'border-gray-900 text-gray-900'
+                          : 'border-transparent text-gray-500 hover:text-gray-700'
+                      }`}
                     >
-                      {saving ? "Salvando..." : "Salvar Alterações"}
+                      {item.label}
                     </button>
-                  </div>
-                </form>
+                  ))}
+                </nav>
               </div>
-            )}
 
-            {/* Placeholder para outras seções */}
-            {activeSection !== 'dados' && (
-              <div className="rounded-2xl border-2 border-gray-200 bg-white p-12 shadow-xl text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <span className="text-4xl">
-                    {menuItems.find(item => item.id === activeSection)?.icon}
-                  </span>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                  {menuItems.find(item => item.id === activeSection)?.label}
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  Esta seção está em desenvolvimento
-                </p>
-                <div className="inline-block px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium">
-                  Em breve
-                </div>
+              {/* Tab Content */}
+              <div className="p-8">
+                {/* Dados da Loja */}
+                {activeSection === 'dados' && (
+                  <div>
+                    <div className="mb-6">
+                      <h2 className="text-lg font-bold text-gray-900">Informações da Loja</h2>
+                      <p className="text-sm text-gray-600 mt-1">Preencha os detalhes da sua loja.</p>
+                    </div>
+
+                    <form onSubmit={handleSaveDados} className="space-y-6">
+                      <div className="grid gap-6 md:grid-cols-2">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Nome do Restaurante *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
+                            placeholder="Ex: Restaurante do João"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Slug (URL) *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={slug}
+                            onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
+                            placeholder="restaurante-do-joao"
+                          />
+                          <p className="mt-2 text-xs text-gray-500">
+                            Seu cardápio: pronto.app/r/{slug || "seu-slug"}
+                          </p>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Telefone
+                          </label>
+                          <input
+                            type="tel"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
+                            placeholder="(11) 98765-4321"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            E-mail
+                          </label>
+                          <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
+                            placeholder="contato@restaurante.com"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            CNPJ
+                          </label>
+                          <input
+                            type="text"
+                            value={cnpj}
+                            onChange={(e) => setCnpj(e.target.value)}
+                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
+                            placeholder="00.000.000/0000-00"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            URL do Logo
+                          </label>
+                          <input
+                            type="url"
+                            value={logoUrl}
+                            onChange={(e) => setLogoUrl(e.target.value)}
+                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
+                            placeholder="https://..."
+                          />
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Endereço
+                          </label>
+                          <input
+                            type="text"
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
+                            placeholder="Rua, número, bairro, cidade - UF"
+                          />
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Slogan
+                          </label>
+                          <input
+                            type="text"
+                            value={slogan}
+                            onChange={(e) => setSlogan(e.target.value)}
+                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
+                            placeholder="Ex: A melhor comida da região!"
+                          />
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Descrição
+                          </label>
+                          <textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition resize-none"
+                            placeholder="Descreva seu restaurante..."
+                            rows={4}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 pt-4 border-t-2 border-gray-100">
+                        <button
+                          type="submit"
+                          disabled={saving}
+                          className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold hover:from-blue-700 hover:to-indigo-700 transition shadow-lg shadow-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {saving ? "Salvando..." : "Salvar Alterações"}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
+                {/* Placeholder para outras seções */}
+                {activeSection !== 'dados' && (
+                  <div className="text-center py-12">
+                    <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                      <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">
+                      {menuItems.find(item => item.id === activeSection)?.label}
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      Esta seção está em desenvolvimento
+                    </p>
+                    <div className="inline-block px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium">
+                      Em breve
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
       </main>
