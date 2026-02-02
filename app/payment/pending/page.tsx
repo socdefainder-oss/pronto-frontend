@@ -1,8 +1,9 @@
 ﻿"use client";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function PaymentPending() {
+function PendingContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("order_id");
 
@@ -29,5 +30,17 @@ export default function PaymentPending() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function PaymentPending() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg text-gray-600">Carregando...</div>
+      </div>
+    }>
+      <PendingContent />
+    </Suspense>
   );
 }
