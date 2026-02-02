@@ -51,10 +51,41 @@ export default function RestaurantSettingsPage() {
   const [isMEI, setIsMEI] = useState("");
   const [cnpjValid, setCnpjValid] = useState(false);
   const [cnpjAnalyzedAt, setCnpjAnalyzedAt] = useState("");
+  
+  // Estados para Horários
+  const [currentTime, setCurrentTime] = useState("");
+  const [schedules, setSchedules] = useState<{
+    [key: string]: { start: string; end: string }[];
+  }>({
+    monday: [{ start: "17:30", end: "23:30" }],
+    tuesday: [{ start: "17:30", end: "23:30" }],
+    wednesday: [{ start: "17:30", end: "23:30" }],
+    thursday: [{ start: "17:30", end: "23:30" }],
+    friday: [{ start: "17:30", end: "23:30" }],
+    saturday: [{ start: "17:30", end: "23:30" }],
+    sunday: [{ start: "17:30", end: "23:30" }],
+  });
 
   useEffect(() => {
     if (!restaurantId) return;
     loadRestaurant();
+    
+    // Atualiza o horário atual a cada segundo
+    const timer = setInterval(() => {
+      const now = new Date();
+      const formatter = new Intl.DateTimeFormat('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        weekday: 'long',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        timeZone: 'America/Sao_Paulo'
+      });
+      setCurrentTime(formatter.format(now));
+    }, 1000);
+    
+    return () => clearInterval(timer);
   }, [restaurantId]);
 
   async function loadRestaurant() {
@@ -650,8 +681,148 @@ export default function RestaurantSettingsPage() {
                   </form>
                 )}
 
+                {/* Horários */}
+                {activeSection === 'horarios' && (
+                  <div>
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-6">
+                      <div>
+                        <h2 className="text-lg font-bold text-gray-900">Horários de funcionamento</h2>
+                        <p className="text-sm text-gray-600 mt-1">Configure abaixo os dias e horários em que sua loja estará aberta para pedidos.</p>
+                        <p className="text-sm text-gray-600">Importante: os horários de funcionamento levam em consideração o fuso horário da sua loja.</p>
+                      </div>
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          className="px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                          Agendar pausa
+                        </button>
+                        <button
+                          type="button"
+                          className="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700"
+                        >
+                          Salvar
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Horário atual */}
+                    <div className="mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                      <h3 className="font-semibold text-gray-900 mb-2">Horário atual na loja</h3>
+                      <div className="flex items-center gap-2 text-blue-700">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-2xl font-bold">{currentTime.split(',')[1]?.trim().split(' ')[0] || "00:00"}</span>
+                        <span className="text-sm">{currentTime}</span>
+                      </div>
+                    </div>
+
+                    {/* Dias da semana */}
+                    <div className="space-y-6">
+                      {[
+                        { key: 'monday', label: 'Segunda-feira' },
+                        { key: 'tuesday', label: 'Terça-feira' },
+                        { key: 'wednesday', label: 'Quarta-feira' },
+                        { key: 'thursday', label: 'Quinta-feira' },
+                        { key: 'friday', label: 'Sexta-feira' },
+                        { key: 'saturday', label: 'Sábado' },
+                        { key: 'sunday', label: 'Domingo' },
+                      ].map((day, dayIndex) => (
+                        <div key={day.key}>
+                          <h3 className="font-semibold text-gray-900 mb-3">{day.label}</h3>
+                          {schedules[day.key]?.map((period, periodIndex) => (
+                            <div key={periodIndex} className="flex items-center gap-3 mb-3">
+                              {/* Horário de início */}
+                              <div className="relative">
+                                <input
+                                  type="time"
+                                  value={period.start}
+                                  onChange={(e) => {
+                                    const newSchedules = { ...schedules };
+                                    newSchedules[day.key][periodIndex].start = e.target.value;
+                                    setSchedules(newSchedules);
+                                  }}
+                                  className="w-28 px-3 py-2 border-2 border-gray-300 rounded-lg outline-none focus:border-blue-500"
+                                />
+                              </div>
+
+                              <span className="text-gray-600">até</span>
+
+                              {/* Horário de fim */}
+                              <div className="relative">
+                                <input
+                                  type="time"
+                                  value={period.end}
+                                  onChange={(e) => {
+                                    const newSchedules = { ...schedules };
+                                    newSchedules[day.key][periodIndex].end = e.target.value;
+                                    setSchedules(newSchedules);
+                                  }}
+                                  className="w-28 px-3 py-2 border-2 border-gray-300 rounded-lg outline-none focus:border-blue-500"
+                                />
+                              </div>
+
+                              {/* Botão deletar */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newSchedules = { ...schedules };
+                                  newSchedules[day.key].splice(periodIndex, 1);
+                                  if (newSchedules[day.key].length === 0) {
+                                    newSchedules[day.key] = [{ start: "", end: "" }];
+                                  }
+                                  setSchedules(newSchedules);
+                                }}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </div>
+                          ))}
+
+                          {/* Botões de ação */}
+                          <div className="flex gap-3 mt-3">
+                            {dayIndex > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const prevDay = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'][dayIndex - 1];
+                                  const newSchedules = { ...schedules };
+                                  newSchedules[day.key] = JSON.parse(JSON.stringify(schedules[prevDay]));
+                                  setSchedules(newSchedules);
+                                }}
+                                className="px-4 py-2 text-sm text-gray-700 border-2 border-gray-300 rounded-lg hover:bg-gray-50"
+                              >
+                                Copiar horário acima
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newSchedules = { ...schedules };
+                                newSchedules[day.key].push({ start: "17:30", end: "23:30" });
+                                setSchedules(newSchedules);
+                              }}
+                              className="px-4 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700 flex items-center gap-2"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                              </svg>
+                              Novo período
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Placeholder para outras seções */}
-                {activeSection !== 'dados' && (
+                {activeSection !== 'dados' && activeSection !== 'horarios' && (
                   <div className="text-center py-12">
                     <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-6">
                       <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
