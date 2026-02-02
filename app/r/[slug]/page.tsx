@@ -190,23 +190,32 @@ export default function PublicRestaurantPage({ params }: { params: Promise<{ slu
       if (!response.ok) throw new Error("Erro ao criar pedido");
 
       const order = await response.json();
-      
-      // Limpar carrinho e fechar modal
+
+      // Limpar carrinho
       setCart([]);
       setShowCheckout(false);
 
-      // Redirecionar para WhatsApp
-      const phone = String(restaurant?.phone || "").replace(/\D/g, "");
-      if (phone) {
-        const message = encodeURIComponent(
-          `Olá! Acabei de fazer o pedido #${order.orderNumber}\n\n` +
-          `Total: R$ ${(order.totalCents / 100).toFixed(2).replace(".", ",")}\n\n` +
-          `Obrigado!`
-        );
-        window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
-      }
+      // Criar pagamento no Mercado Pago
+      try {
+        const paymentResponse = await fetch(`${API_URL}/api/payments/create`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId: order.id,
+            paymentMethod: formData.get("paymentMethod") || "pix",
+          }),
+        });
 
-      alert(`Pedido #${order.orderNumber} criado com sucesso!\nO restaurante receberá sua solicitação.`);
+        if (paymentResponse.ok) {
+          const paymentData = await paymentResponse.json();
+          window.location.href = paymentData.sandboxInitPoint;
+        } else {
+          alert("Erro ao processar pagamento. Tente novamente.");
+        }
+      } catch (paymentError) {
+        console.error("Erro ao criar pagamento:", paymentError);
+        alert("Erro ao processar pagamento. Entre em contato com o restaurante.");
+      }
     } catch (error) {
       console.error("Erro ao criar pedido:", error);
       alert("Erro ao criar pedido. Tente novamente.");
@@ -568,8 +577,8 @@ export default function PublicRestaurantPage({ params }: { params: Promise<{ slu
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Forma de Pagamento</label>
                   <select name="paymentMethod" className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500">
-                    <option value="cash">Dinheiro</option>
-                    <option value="pix">PIX</option>
+                    <option value="pix">PIX (Mercado Pago)</option>
+                    <option value="credit_card">Cart?o de Cr?dito (Mercado Pago)</option>
                     <option value="card">Cartão</option>
                   </select>
                 </div>
