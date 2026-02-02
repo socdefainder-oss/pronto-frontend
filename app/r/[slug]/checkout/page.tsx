@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/app/lib/CartContext";
@@ -11,8 +11,8 @@ import CustomerStep from "@/app/components/checkout/CustomerStep";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
 
-export default function CheckoutPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params);
+export default function CheckoutPage({ params }: { params: { slug: string } }) {
+  const { slug } = params;
   const router = useRouter();
   const { cart } = useCart();
   const [currentStep, setCurrentStep] = useState(1);

@@ -1,13 +1,13 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useCart } from "@/app/lib/CartContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
 
-export default function PublicRestaurantPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params);
+export default function PublicRestaurantPage({ params }: { params: { slug: string } }) {
+  const { slug } = params;
   const { addToCart, cart, cartTotal, cartCount } = useCart();
   const [restaurant, setRestaurant] = useState<any>(null);
   const [loading, setLoading] = useState(true);
