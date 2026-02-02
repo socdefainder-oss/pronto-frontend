@@ -576,11 +576,7 @@ export default function ProductsPage() {
                           )}
                         </div>
                       </button>
-                      <div className="flex items-center justify-between gap-3 mb-3">
-                        <div className="flex-1">
-                          <h3 className="font-bold text-gray-900">{cat.name}</h3>
-                          <p className="text-xs text-gray-500">{cat.productCount || 0} produtos</p>
-                        </div>
+                      <div className="flex items-center justify-between gap-3 mb-3 px-2">
                         <button
                           onClick={() => handleToggleCategoryActive(cat.id, cat.isActive)}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
