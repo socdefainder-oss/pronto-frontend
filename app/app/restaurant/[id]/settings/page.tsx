@@ -324,6 +324,24 @@ export default function RestaurantSettingsPage() {
                           </div>
                         </div>
 
+                        {/* Nome da Loja (principal) */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Nome da Loja *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full rounded-lg border-2 border-gray-300 px-4 py-2 outline-none focus:border-blue-500"
+                            placeholder="Ex: Xcalota - Barueri"
+                          />
+                          <p className="mt-1 text-xs text-gray-500">
+                            Este é o nome principal que aparece no sistema
+                          </p>
+                        </div>
+
                         {/* Nome da marca */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -334,6 +352,7 @@ export default function RestaurantSettingsPage() {
                             value={brandName}
                             onChange={(e) => setBrandName(e.target.value)}
                             className="w-full rounded-lg border-2 border-gray-300 px-4 py-2 outline-none focus:border-blue-500"
+                            placeholder="Ex: Xcalota"
                           />
                         </div>
 
@@ -347,6 +366,7 @@ export default function RestaurantSettingsPage() {
                             value={unitName}
                             onChange={(e) => setUnitName(e.target.value)}
                             className="w-full rounded-lg border-2 border-gray-300 px-4 py-2 outline-none focus:border-blue-500"
+                            placeholder="Ex: Barueri"
                           />
                         </div>
 
