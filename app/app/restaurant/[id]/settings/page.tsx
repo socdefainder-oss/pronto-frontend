@@ -31,6 +31,26 @@ export default function RestaurantSettingsPage() {
   const [logoUrl, setLogoUrl] = useState("");
   const [cnpj, setCnpj] = useState("");
   const [email, setEmail] = useState("");
+  
+  // Novos campos
+  const [brandName, setBrandName] = useState("");
+  const [unitName, setUnitName] = useState("");
+  const [acceptsDelivery, setAcceptsDelivery] = useState(true);
+  const [minDeliveryValue, setMinDeliveryValue] = useState("");
+  const [freeDeliveryFrom, setFreeDeliveryFrom] = useState("");
+  const [acceptsPickup, setAcceptsPickup] = useState(true);
+  const [pickupMinTime, setPickupMinTime] = useState("");
+  const [pickupMaxTime, setPickupMaxTime] = useState("");
+  const [acceptsDineIn, setAcceptsDineIn] = useState(false);
+  const [acceptsScheduled, setAcceptsScheduled] = useState(false);
+  const [useReadyColumn, setUseReadyColumn] = useState(true);
+  const [useCompletedColumn, setUseCompletedColumn] = useState(true);
+  const [companyName, setCompanyName] = useState("");
+  const [cnpjStatus, setCnpjStatus] = useState("");
+  const [cnae, setCnae] = useState("");
+  const [isMEI, setIsMEI] = useState("");
+  const [cnpjValid, setCnpjValid] = useState(false);
+  const [cnpjAnalyzedAt, setCnpjAnalyzedAt] = useState("");
 
   useEffect(() => {
     if (!restaurantId) return;
@@ -225,147 +245,350 @@ export default function RestaurantSettingsPage() {
           <div className="p-8">
                 {/* Dados da Loja */}
                 {activeSection === 'dados' && (
-                  <div>
-                    <div className="mb-6">
-                      <h2 className="text-lg font-bold text-gray-900">Informações da Loja</h2>
-                      <p className="text-sm text-gray-600 mt-1">Preencha os detalhes da sua loja.</p>
-                    </div>
+                  <div className="space-y-8">
+                    {/* Informações da Loja */}
+                    <div>
+                      <div className="mb-6">
+                        <h2 className="text-lg font-bold text-gray-900">Informações da Loja</h2>
+                        <p className="text-sm text-gray-600 mt-1">Preencha os detalhes da sua loja.</p>
+                      </div>
 
-                    <form onSubmit={handleSaveDados} className="space-y-6">
-                      <div className="grid gap-6 md:grid-cols-2">
+                      <div className="space-y-4">
+                        {/* Upload de Logo */}
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Nome do Restaurante *
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Logo da Loja
+                          </label>
+                          <div className="flex items-center gap-4">
+                            <button
+                              type="button"
+                              className="px-4 py-2 border-2 border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              Escolher arquivo
+                            </button>
+                            <span className="text-sm text-gray-500">Nenhum arquivo escolhido</span>
+                          </div>
+                        </div>
+
+                        {/* Upload de Banner */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Banner da Loja
+                          </label>
+                          <div className="flex items-center gap-4">
+                            <button
+                              type="button"
+                              className="px-4 py-2 border-2 border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              Escolher arquivo
+                            </button>
+                            <span className="text-sm text-gray-500">Nenhum arquivo escolhido</span>
+                          </div>
+                        </div>
+
+                        {/* Nome da marca */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Nome da marca
                           </label>
                           <input
                             type="text"
-                            required
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
-                            placeholder="Ex: Restaurante do João"
+                            value={brandName}
+                            onChange={(e) => setBrandName(e.target.value)}
+                            className="w-full rounded-lg border-2 border-gray-300 px-4 py-2 outline-none focus:border-blue-500"
                           />
                         </div>
 
+                        {/* Nome da unidade */}
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Slug (URL) *
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Nome da unidade
                           </label>
                           <input
                             type="text"
-                            required
+                            value={unitName}
+                            onChange={(e) => setUnitName(e.target.value)}
+                            className="w-full rounded-lg border-2 border-gray-300 px-4 py-2 outline-none focus:border-blue-500"
+                          />
+                        </div>
+
+                        {/* Link personalizado */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Link personalizado do seu cardápio
+                          </label>
+                          <input
+                            type="text"
                             value={slug}
                             onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
-                            placeholder="restaurante-do-joao"
+                            className="w-full rounded-lg border-2 border-gray-300 px-4 py-2 outline-none focus:border-blue-500"
                           />
-                          <p className="mt-2 text-xs text-gray-500">
-                            Seu cardápio: pronto.app/r/{slug || "seu-slug"}
+                          <p className="mt-2 text-sm text-gray-600">
+                            Este será o link do seu cardápio: <span className="font-semibold">pronto.app/{slug || "seu-link"}</span>
                           </p>
                         </div>
+                      </div>
+                    </div>
 
+                    {/* Modos de pedidos */}
+                    <div className="border-t-2 pt-8">
+                      <div className="mb-6">
+                        <h2 className="text-lg font-bold text-gray-900">Modos de pedidos</h2>
+                        <p className="text-sm text-gray-600 mt-1">Escolha os modos de pedidos disponíveis para a sua loja.</p>
+                      </div>
+
+                      <div className="space-y-6">
+                        {/* Delivery */}
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                          <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={acceptsDelivery}
+                              onChange={(e) => setAcceptsDelivery(e.target.checked)}
+                              className="w-5 h-5 text-blue-600"
+                            />
+                            <span className="font-semibold text-gray-900">Aceitar pedidos para delivery</span>
+                          </label>
+                          
+                          {acceptsDelivery && (
+                            <div className="mt-4 space-y-4 pl-8">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  Pedido mínimo para entrega
+                                </label>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-gray-600">R$</span>
+                                  <input
+                                    type="text"
+                                    value={minDeliveryValue}
+                                    onChange={(e) => setMinDeliveryValue(e.target.value)}
+                                    className="w-32 rounded-lg border-2 border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
+                                    placeholder="0,00"
+                                  />
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  Frete grátis para pedidos a partir de um valor
+                                </label>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-gray-600">R$</span>
+                                  <input
+                                    type="text"
+                                    value={freeDeliveryFrom}
+                                    onChange={(e) => setFreeDeliveryFrom(e.target.value)}
+                                    className="w-32 rounded-lg border-2 border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
+                                    placeholder="0,00"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Retirada */}
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                          <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={acceptsPickup}
+                              onChange={(e) => setAcceptsPickup(e.target.checked)}
+                              className="w-5 h-5 text-blue-600"
+                            />
+                            <span className="font-semibold text-gray-900">Aceitar pedidos para retirada</span>
+                          </label>
+                          
+                          {acceptsPickup && (
+                            <div className="mt-4 grid grid-cols-2 gap-4 pl-8">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  Tempo mínimo
+                                </label>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="text"
+                                    value={pickupMinTime}
+                                    onChange={(e) => setPickupMinTime(e.target.value)}
+                                    className="w-20 rounded-lg border-2 border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
+                                  />
+                                  <span className="text-gray-600">min</span>
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  Tempo máximo
+                                </label>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="text"
+                                    value={pickupMaxTime}
+                                    onChange={(e) => setPickupMaxTime(e.target.value)}
+                                    className="w-20 rounded-lg border-2 border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
+                                  />
+                                  <span className="text-gray-600">min</span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Balcão */}
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                          <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={acceptsDineIn}
+                              onChange={(e) => setAcceptsDineIn(e.target.checked)}
+                              className="w-5 h-5 text-blue-600"
+                            />
+                            <span className="font-semibold text-gray-900">Aceitar pedidos no balcão (consumo no local)</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Configurações de agendamento */}
+                    <div className="border-t-2 pt-8">
+                      <div className="mb-6">
+                        <h2 className="text-lg font-bold text-gray-900">Configurações de agendamento</h2>
+                        <p className="text-sm text-gray-600 mt-1">Configure as opções de agendamento para a sua loja.</p>
+                      </div>
+
+                      <div className="p-4 bg-gray-50 rounded-lg">
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={acceptsScheduled}
+                            onChange={(e) => setAcceptsScheduled(e.target.checked)}
+                            className="w-5 h-5 text-blue-600"
+                          />
+                          <span className="font-semibold text-gray-900">Receber pedidos agendados</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Interface dos Pedidos */}
+                    <div className="border-t-2 pt-8">
+                      <div className="mb-6">
+                        <h2 className="text-lg font-bold text-gray-900">Interface dos Pedidos</h2>
+                        <p className="text-sm text-gray-600 mt-1">Configure as colunas e status visíveis na página de pedidos.</p>
+                      </div>
+
+                      <div className="space-y-3">
+                        <label className="flex items-center gap-3 cursor-pointer p-4 bg-gray-50 rounded-lg">
+                          <input
+                            type="checkbox"
+                            checked={useReadyColumn}
+                            onChange={(e) => setUseReadyColumn(e.target.checked)}
+                            className="w-5 h-5 text-blue-600"
+                          />
+                          <span className="font-medium text-gray-900">Usar coluna 'Pronto' (pedidos prontos para entrega)</span>
+                        </label>
+
+                        <label className="flex items-center gap-3 cursor-pointer p-4 bg-gray-50 rounded-lg">
+                          <input
+                            type="checkbox"
+                            checked={useCompletedColumn}
+                            onChange={(e) => setUseCompletedColumn(e.target.checked)}
+                            className="w-5 h-5 text-blue-600"
+                          />
+                          <span className="font-medium text-gray-900">Usar coluna 'Finalizados' (pedidos entregues hoje)</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Dados da Empresa */}
+                    <div className="border-t-2 pt-8">
+                      <div className="mb-6">
+                        <h2 className="text-lg font-bold text-gray-900">Dados da Empresa</h2>
+                        <p className="text-sm text-gray-600 mt-1">Informações cadastrais da sua empresa.</p>
+                        <p className="text-xs text-gray-500 mt-2">Para alterar o CNPJ, nos chame no suporte.</p>
+                      </div>
+
+                      <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Telefone
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Nome/Razão Social:
                           </label>
                           <input
-                            type="tel"
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
-                            placeholder="(11) 98765-4321"
+                            type="text"
+                            value={companyName}
+                            onChange={(e) => setCompanyName(e.target.value)}
+                            className="w-full rounded-lg border-2 border-gray-300 px-4 py-2 outline-none focus:border-blue-500"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            E-mail
-                          </label>
-                          <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
-                            placeholder="contato@restaurante.com"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            CNPJ
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            CNPJ:
                           </label>
                           <input
                             type="text"
                             value={cnpj}
-                            onChange={(e) => setCnpj(e.target.value)}
-                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
-                            placeholder="00.000.000/0000-00"
+                            disabled
+                            className="w-full rounded-lg border-2 border-gray-300 px-4 py-2 bg-gray-100 text-gray-600"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            URL do Logo
-                          </label>
-                          <input
-                            type="url"
-                            value={logoUrl}
-                            onChange={(e) => setLogoUrl(e.target.value)}
-                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
-                            placeholder="https://..."
-                          />
-                        </div>
-
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Endereço
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Situação Cadastral:
                           </label>
                           <input
                             type="text"
-                            value={address}
-                            onChange={(e) => setAddress(e.target.value)}
-                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
-                            placeholder="Rua, número, bairro, cidade - UF"
+                            value={cnpjStatus}
+                            disabled
+                            className="w-full rounded-lg border-2 border-gray-300 px-4 py-2 bg-gray-100 text-gray-600"
                           />
                         </div>
 
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Slogan
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Atividade Principal (CNAE):
                           </label>
                           <input
                             type="text"
-                            value={slogan}
-                            onChange={(e) => setSlogan(e.target.value)}
-                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
-                            placeholder="Ex: A melhor comida da região!"
+                            value={cnae}
+                            disabled
+                            className="w-full rounded-lg border-2 border-gray-300 px-4 py-2 bg-gray-100 text-gray-600"
                           />
                         </div>
 
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Descrição
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Microempreendedor Individual:
                           </label>
-                          <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition resize-none"
-                            placeholder="Descreva seu restaurante..."
-                            rows={4}
+                          <input
+                            type="text"
+                            value={isMEI}
+                            disabled
+                            className="w-full rounded-lg border-2 border-gray-300 px-4 py-2 bg-gray-100 text-gray-600"
                           />
                         </div>
-                      </div>
 
-                      <div className="flex gap-3 pt-4 border-t-2 border-gray-100">
-                        <button
-                          type="submit"
-                          disabled={saving}
-                          className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold hover:from-blue-700 hover:to-indigo-700 transition shadow-lg shadow-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {saving ? "Salvando..." : "Salvar Alterações"}
-                        </button>
+                        {cnpjValid && (
+                          <div className="p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+                            <p className="text-green-800 font-semibold">✓ CNPJ Válido</p>
+                            {cnpjAnalyzedAt && (
+                              <p className="text-sm text-green-700 mt-1">Analisado em: {cnpjAnalyzedAt}</p>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    </form>
+                    </div>
+
+                    {/* Botão Salvar */}
+                    <div className="border-t-2 pt-6">
+                      <button
+                        type="submit"
+                        disabled={saving}
+                        className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {saving ? "Salvando..." : "Salvar Alterações"}
+                      </button>
+                    </div>
                   </div>
                 )}
 
