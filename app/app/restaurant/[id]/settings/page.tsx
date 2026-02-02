@@ -84,6 +84,26 @@ export default function RestaurantSettingsPage() {
       setLogoUrl(data.logoUrl || "");
       setCnpj(data.cnpj || "");
       setEmail(data.email || "");
+      
+      // Novos campos
+      setBrandName(data.brandName || "");
+      setUnitName(data.unitName || "");
+      setAcceptsDelivery(data.acceptsDelivery !== undefined ? data.acceptsDelivery : true);
+      setMinDeliveryValue(data.minDeliveryValue || "");
+      setFreeDeliveryFrom(data.freeDeliveryFrom || "");
+      setAcceptsPickup(data.acceptsPickup !== undefined ? data.acceptsPickup : true);
+      setPickupMinTime(data.pickupMinTime || "");
+      setPickupMaxTime(data.pickupMaxTime || "");
+      setAcceptsDineIn(data.acceptsDineIn || false);
+      setAcceptsScheduled(data.acceptsScheduled || false);
+      setUseReadyColumn(data.useReadyColumn !== undefined ? data.useReadyColumn : true);
+      setUseCompletedColumn(data.useCompletedColumn !== undefined ? data.useCompletedColumn : true);
+      setCompanyName(data.companyName || "");
+      setCnpjStatus(data.cnpjStatus || "");
+      setCnae(data.cnae || "");
+      setIsMEI(data.isMEI || "");
+      setCnpjValid(data.cnpjValid || false);
+      setCnpjAnalyzedAt(data.cnpjAnalyzedAt || "");
     } catch (err: any) {
       setError(err.message || "Erro ao carregar dados");
     } finally {
@@ -121,6 +141,24 @@ export default function RestaurantSettingsPage() {
           logoUrl,
           cnpj,
           email,
+          brandName,
+          unitName,
+          acceptsDelivery,
+          minDeliveryValue,
+          freeDeliveryFrom,
+          acceptsPickup,
+          pickupMinTime,
+          pickupMaxTime,
+          acceptsDineIn,
+          acceptsScheduled,
+          useReadyColumn,
+          useCompletedColumn,
+          companyName,
+          cnpjStatus,
+          cnae,
+          isMEI,
+          cnpjValid,
+          cnpjAnalyzedAt,
         }),
       });
 
@@ -245,7 +283,7 @@ export default function RestaurantSettingsPage() {
           <div className="p-8">
                 {/* Dados da Loja */}
                 {activeSection === 'dados' && (
-                  <div className="space-y-8">
+                  <form onSubmit={handleSaveDados} className="space-y-8">
                     {/* Informações da Loja */}
                     <div>
                       <div className="mb-6">
@@ -589,7 +627,7 @@ export default function RestaurantSettingsPage() {
                         {saving ? "Salvando..." : "Salvar Alterações"}
                       </button>
                     </div>
-                  </div>
+                  </form>
                 )}
 
                 {/* Placeholder para outras seções */}
