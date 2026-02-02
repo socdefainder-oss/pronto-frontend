@@ -1,30 +1,18 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
+import { useCart } from "@/app/lib/CartContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
 
-interface CartItem {
-  productId: string;
-  productName: string;
-  priceCents: number;
-  quantity: number;
-}
-
 export default function PublicRestaurantPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
+  const { addToCart, cart, cartTotal, cartCount } = useCart();
   const [restaurant, setRestaurant] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [cart, setCart] = useState<CartItem[]>([]);
   const [banners, setBanners] = useState<any[]>([]);
-  const [showCheckout, setShowCheckout] = useState(false);
-  const [orderLoading, setOrderLoading] = useState(false);
-  const [couponCode, setCouponCode] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
-  const [couponError, setCouponError] = useState("");
-  const [validatingCoupon, setValidatingCoupon] = useState(false);
 
   useEffect(() => {
     async function loadRestaurant() {
@@ -53,7 +41,7 @@ export default function PublicRestaurantPage({ params }: { params: Promise<{ slu
   useEffect(() => {
     async function loadBanners() {
       if (!restaurant?.id) return;
-      
+
       try {
         const response = await fetch(`${API_URL}/api/banners/public/${restaurant.id}/active`, { cache: "no-store" });
         if (response.ok) {
@@ -67,162 +55,6 @@ export default function PublicRestaurantPage({ params }: { params: Promise<{ slu
 
     loadBanners();
   }, [restaurant?.id]);
-
-
-  const addToCart = (product: any) => {
-    setCart(prev => {
-      const existing = prev.find(item => item.productId === product.id);
-      if (existing) {
-        return prev.map(item =>
-          item.productId === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-      return [...prev, {
-        productId: product.id,
-        productName: product.name,
-        priceCents: product.priceCents,
-        quantity: 1,
-      }];
-    });
-  };
-
-  const removeFromCart = (productId: string) => {
-    setCart(prev => prev.filter(item => item.productId !== productId));
-  };
-
-  const updateQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(productId);
-      return;
-    }
-    setCart(prev =>
-      prev.map(item =>
-        item.productId === productId ? { ...item, quantity } : item
-      )
-    );
-  };
-
-  const cartTotal = cart.reduce((sum, item) => sum + item.priceCents * item.quantity, 0);
-  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const discount = appliedCoupon?.discountCents || 0;
-  const finalTotal = cartTotal - discount;
-
-  async function validateCoupon() {
-    if (!couponCode.trim()) return;
-
-    setValidatingCoupon(true);
-    setCouponError("");
-
-    try {
-      const response = await fetch(`${API_URL}/api/coupons/validate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code: couponCode.toUpperCase(),
-          restaurantId: restaurant.id,
-          orderValueCents: cartTotal,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setAppliedCoupon(data);
-        setCouponError("");
-      } else {
-        const error = await response.json();
-        setCouponError(error.error || "Cupom inválido");
-        setAppliedCoupon(null);
-      }
-    } catch (error) {
-      console.error("Erro ao validar cupom:", error);
-      setCouponError("Erro ao validar cupom");
-      setAppliedCoupon(null);
-    } finally {
-      setValidatingCoupon(false);
-    }
-  }
-
-  function removeCoupon() {
-    setAppliedCoupon(null);
-    setCouponCode("");
-    setCouponError("");
-  }
-
-  const handleCheckout = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setOrderLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const orderData = {
-      restaurantId: restaurant.id,
-      customer: {
-        name: formData.get("name"),
-        phone: formData.get("phone"),
-        email: formData.get("email") || undefined,
-      },
-      address: formData.get("street") ? {
-        street: formData.get("street"),
-        number: formData.get("number"),
-        complement: formData.get("complement") || undefined,
-        district: formData.get("district"),
-        city: formData.get("city"),
-        state: formData.get("state"),
-        zipCode: formData.get("zipCode") || undefined,
-      } : undefined,
-      items: cart.map(item => ({
-        productId: item.productId,
-        quantity: item.quantity,
-      })),
-      paymentMethod: formData.get("paymentMethod"),
-      notes: formData.get("notes") || undefined,
-      deliveryFeeCents: 0,
-    };
-
-    try {
-      const response = await fetch(`${API_URL}/api/orders`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderData),
-      });
-
-      if (!response.ok) throw new Error("Erro ao criar pedido");
-
-      const order = await response.json();
-
-      // Limpar carrinho
-      setCart([]);
-      setShowCheckout(false);
-
-      // Criar pagamento no Mercado Pago
-      try {
-        const paymentResponse = await fetch(`${API_URL}/api/payments/create`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            orderId: order.id,
-            paymentMethod: formData.get("paymentMethod") || "pix",
-          }),
-        });
-
-        if (paymentResponse.ok) {
-          const paymentData = await paymentResponse.json();
-          window.location.href = paymentData.sandboxInitPoint;
-        } else {
-          alert("Erro ao processar pagamento. Tente novamente.");
-        }
-      } catch (paymentError) {
-        console.error("Erro ao criar pagamento:", paymentError);
-        alert("Erro ao processar pagamento. Entre em contato com o restaurante.");
-      }
-    } catch (error) {
-      console.error("Erro ao criar pedido:", error);
-      alert("Erro ao criar pedido. Tente novamente.");
-    } finally {
-      setOrderLoading(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -301,7 +133,7 @@ export default function PublicRestaurantPage({ params }: { params: Promise<{ slu
             )}
             <div>
               <h1 className="text-4xl font-bold text-gray-900">{restaurant?.name}</h1>
-              
+
               {/* Slogan motivador do restaurante */}
               {restaurant?.slogan && (
                 <div className="mt-3 mb-2">
@@ -371,7 +203,6 @@ export default function PublicRestaurantPage({ params }: { params: Promise<{ slu
                 </div>
               )}
 
-
               {restaurant?.categories?.map((category: any) => (
                 category.products?.length > 0 && (
                   <div key={category.id} className="mb-12 last:mb-0">
@@ -406,8 +237,8 @@ export default function PublicRestaurantPage({ params }: { params: Promise<{ slu
 
       {/* Floating Cart Button */}
       {cartCount > 0 && (
-        <button
-          onClick={() => setShowCheckout(true)}
+        <Link 
+          href={`/r/${slug}/checkout`}
           className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-4 rounded-2xl shadow-2xl hover:shadow-emerald-600/50 transition-all hover:scale-105 flex items-center gap-3"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -417,188 +248,7 @@ export default function PublicRestaurantPage({ params }: { params: Promise<{ slu
             <div className="font-bold text-lg">{cartCount} {cartCount === 1 ? 'item' : 'itens'}</div>
             <div className="text-sm">R$ {(cartTotal / 100).toFixed(2).replace('.', ',')}</div>
           </div>
-        </button>
-      )}
-
-      {/* Checkout Modal */}
-      {showCheckout && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full my-8">
-            <div className="sticky top-0 bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6 rounded-t-2xl flex items-center justify-between">
-              <h2 className="text-2xl font-bold">Finalizar Pedido</h2>
-              <button onClick={() => setShowCheckout(false)} className="text-white hover:bg-white/20 p-2 rounded-lg">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
-              {/* Cart Items */}
-              <div className="mb-6">
-                <h3 className="font-bold text-gray-900 mb-4">Itens do Pedido</h3>
-                {cart.map((item) => (
-                  <div key={item.productId} className="flex items-center justify-between py-3 border-b">
-                    <div className="flex-1">
-                      <div className="font-semibold text-gray-900">{item.productName}</div>
-                      <div className="text-sm text-gray-500">R$ {(item.priceCents / 100).toFixed(2).replace('.', ',')} cada</div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => updateQuantity(item.productId, item.quantity - 1)} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center">-</button>
-                      <span className="font-bold w-8 text-center">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.productId, item.quantity + 1)} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center">+</button>
-                      <button onClick={() => removeFromCart(item.productId)} className="ml-2 text-red-600 hover:text-red-700">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                      <div className="font-bold text-gray-900 w-24 text-right">
-                        R$ {((item.priceCents * item.quantity) / 100).toFixed(2).replace('.', ',')}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <div className="flex justify-between items-center pt-4 text-xl font-bold">
-                  <span>Total:</span>
-                  <span className="text-emerald-600">R$ {(cartTotal / 100).toFixed(2).replace('.', ',')}</span>
-                </div>
-              </div>
-
-              {/* Cupom Section */}
-              <div className="border-t border-b py-4 mb-4">
-                <h3 className="font-bold text-gray-900 mb-3">Cupom de Desconto</h3>
-                {!appliedCoupon ? (
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                      placeholder="Digite o código do cupom"
-                      className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 uppercase"
-                    />
-                    <button
-                      type="button"
-                      onClick={validateCoupon}
-                      disabled={validatingCoupon || !couponCode.trim()}
-                      className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-teal-700 transition disabled:opacity-50"
-                    >
-                      {validatingCoupon ? "..." : "Aplicar"}
-                    </button>
-                  </div>
-                ) : (
-                  <div className="bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4 flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-emerald-700 text-lg">{appliedCoupon.coupon.code}</div>
-                      <div className="text-sm text-emerald-600">
-                        Desconto: R$ {(appliedCoupon.discountCents / 100).toFixed(2).replace('.', ',')}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={removeCoupon}
-                      className="text-red-600 hover:text-red-700 font-bold"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                )}
-                {couponError && (
-                  <div className="mt-2 text-sm text-red-600 flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {couponError}
-                  </div>
-                )}
-                {appliedCoupon && (
-                  <div className="mt-4 space-y-2 text-sm">
-                    <div className="flex justify-between text-gray-600">
-                      <span>Subtotal:</span>
-                      <span>R$ {(cartTotal / 100).toFixed(2).replace('.', ',')}</span>
-                    </div>
-                    <div className="flex justify-between text-emerald-600 font-bold">
-                      <span>Desconto:</span>
-                      <span>- R$ {(appliedCoupon.discountCents / 100).toFixed(2).replace('.', ',')}</span>
-                    </div>
-                    <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t">
-                      <span>Total Final:</span>
-                      <span className="text-emerald-600">R$ {(finalTotal / 100).toFixed(2).replace('.', ',')}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Form */}
-              <form onSubmit={handleCheckout} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Nome *</label>
-                  <input type="text" name="name" required className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">WhatsApp *</label>
-                  <input type="tel" name="phone" required placeholder="(11) 99999-9999" className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Email</label>
-                  <input type="email" name="email" className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
-                </div>
-
-                <div className="border-t pt-4">
-                  <h4 className="font-bold text-gray-900 mb-3">Endereço de Entrega (opcional)</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2">
-                      <input type="text" name="street" placeholder="Rua" className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500" />
-                    </div>
-                    <div>
-                      <input type="text" name="number" placeholder="Número" className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500" />
-                    </div>
-                    <div>
-                      <input type="text" name="complement" placeholder="Complemento" className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500" />
-                    </div>
-                    <div>
-                      <input type="text" name="district" placeholder="Bairro" className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500" />
-                    </div>
-                    <div>
-                      <input type="text" name="city" placeholder="Cidade" className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500" />
-                    </div>
-                    <div>
-                      <input type="text" name="state" placeholder="Estado" maxLength={2} className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500" />
-                    </div>
-                    <div>
-                      <input type="text" name="zipCode" placeholder="CEP" className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500" />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Forma de Pagamento</label>
-                  <select name="paymentMethod" className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500">
-                    <option value="pix">PIX (Mercado Pago)</option>
-                    <option value="credit_card">Cart?o de Cr?dito (Mercado Pago)</option>
-                    <option value="card">Cartão</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Observações</label>
-                  <textarea name="notes" rows={3} placeholder="Alguma observação sobre o pedido?" className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"></textarea>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={orderLoading}
-                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold py-4 rounded-xl hover:from-emerald-700 hover:to-teal-700 transition shadow-lg disabled:opacity-50"
-                >
-                  {orderLoading ? "Enviando..." : `Finalizar Pedido - R$ ${(finalTotal / 100).toFixed(2).replace('.', ',')}`}
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
+        </Link>
       )}
     </div>
   );
@@ -612,8 +262,8 @@ function ProductCard({ product, onAdd }: { product: any; onAdd: () => void }) {
       {/* Imagem do produto */}
       {product.imageUrl && (
         <div className="relative w-full h-48 bg-gray-100">
-          <img 
-            src={product.imageUrl} 
+          <img
+            src={product.imageUrl}
             alt={product.name}
             className="w-full h-full object-cover"
             onError={(e) => {
@@ -626,7 +276,7 @@ function ProductCard({ product, onAdd }: { product: any; onAdd: () => void }) {
           />
         </div>
       )}
-      
+
       <div className="p-6 flex-1 flex flex-col">
         <h4 className="font-bold text-xl text-gray-900 mb-3">{product.name}</h4>
         {product.description && (
