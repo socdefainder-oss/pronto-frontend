@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { useState } from "react";
-import { clearToken } from "../lib/api";
+import { useState, useEffect } from "react";
+import { clearToken, getToken } from "../lib/api";
 
 export default function Sidebar() {
   const params = useParams();
@@ -12,6 +12,31 @@ export default function Sidebar() {
   const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>({
     "Administrar Loja": true,
   });
+  const [restaurantName, setRestaurantName] = useState<string>("");
+
+  useEffect(() => {
+    if (restaurantId) {
+      loadRestaurantName();
+    }
+  }, [restaurantId]);
+
+  async function loadRestaurantName() {
+    const token = getToken();
+    if (!token || !restaurantId) return;
+
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
+      const res = await fetch(`${API_URL}/api/restaurants/${restaurantId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setRestaurantName(data.name || "");
+      }
+    } catch (err) {
+      console.error("Erro ao carregar nome do restaurante:", err);
+    }
+  }
 
   const menuItems = [
     {
@@ -152,12 +177,20 @@ export default function Sidebar() {
     <aside className="w-64 bg-white border-r border-gray-200 flex flex-col min-h-screen">
       {/* Logo */}
       <div className="p-6 border-b border-gray-200">
-        <Link href="/app" className="flex items-center gap-3">
+        <Link href="/app" className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
             <span className="text-white font-bold text-xl">P</span>
           </div>
           <span className="text-xl font-bold text-gray-900">pronto</span>
         </Link>
+        {restaurantName && (
+          <div className="mt-2 px-3 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg">
+            <p className="text-xs text-emerald-600 font-medium mb-0.5">Gerenciando:</p>
+            <p className="text-sm font-bold text-gray-900 truncate" title={restaurantName}>
+              {restaurantName}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Menu */}
