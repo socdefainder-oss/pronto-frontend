@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
@@ -33,8 +33,8 @@ interface CategoryRevenue {
   quantity: number;
 }
 
-export default function ReportsPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: restaurantId } = use(params);
+export default function ReportsPage({ params }: { params: { id: string } }) {
+  const { id: restaurantId } = params;
   const router = useRouter();
   const [period, setPeriod] = useState<"today" | "week" | "month">("week");
   const [stats, setStats] = useState<Stats | null>(null);
