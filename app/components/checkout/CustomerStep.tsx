@@ -39,6 +39,11 @@ export default function CustomerStep({ onBack, restaurantSlug }: CustomerStepPro
     setLoading(true);
 
     try {
+      // Buscar restaurante pelo slug para obter o ID
+      const restaurantResponse = await fetch(`${API_URL}/api/public/restaurants/${encodeURIComponent(restaurantSlug)}`);
+      if (!restaurantResponse.ok) throw new Error("Restaurante não encontrado");
+      const restaurant = await restaurantResponse.json();
+
       // Recuperar dados do sessionStorage
       const coupon = JSON.parse(sessionStorage.getItem("checkout_coupon") || "null");
       const notes = sessionStorage.getItem("checkout_notes") || "";
@@ -49,7 +54,7 @@ export default function CustomerStep({ onBack, restaurantSlug }: CustomerStepPro
 
       // Criar pedido
       const orderData = {
-        restaurantId,
+        restaurantId: restaurant.id,
         customer: { 
           name, 
           phone, 
