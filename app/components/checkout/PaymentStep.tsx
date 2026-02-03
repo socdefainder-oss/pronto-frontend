@@ -12,21 +12,41 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
   const [paymentMethod, setPaymentMethod] = useState<string>("pix");
   const [showCardBrandModal, setShowCardBrandModal] = useState(false);
   const [selectedCardBrand, setSelectedCardBrand] = useState("");
+  
+  // Campos do cartão de crédito
+  const [showCardForm, setShowCardForm] = useState(false);
+  const [cardHolder, setCardHolder] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiryMonth, setExpiryMonth] = useState("");
+  const [expiryYear, setExpiryYear] = useState("");
+  const [cvv, setCvv] = useState("");
+  const [cardCpfCnpj, setCardCpfCnpj] = useState("");
 
   const handleMethodSelect = (method: string) => {
     setPaymentMethod(method);
-    
-    if (method === "credit_card_delivery" || method === "debit_delivery") {
+
+    if (method === "credit_card") {
+      setShowCardForm(true);
+      setShowCardBrandModal(false);
+      setSelectedCardBrand("");
+    } else if (method === "credit_card_delivery" || method === "debit_delivery") {
       setShowCardBrandModal(true);
+      setShowCardForm(false);
     } else {
       setShowCardBrandModal(false);
       setSelectedCardBrand("");
+      setShowCardForm(false);
     }
   };
 
   const handleCardBrandSelect = (brand: string) => {
     setSelectedCardBrand(brand);
     setShowCardBrandModal(false);
+  };
+
+  const formatCardNumber = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    return numbers.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
   };
 
   const handleNext = () => {
@@ -38,6 +58,42 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
     if ((paymentMethod === "credit_card_delivery" || paymentMethod === "debit_delivery") && !selectedCardBrand) {
       alert("Selecione a bandeira do cartão");
       return;
+    }
+
+    // Validar campos do cartão de crédito online
+    if (paymentMethod === "credit_card") {
+      if (!cardHolder || !cardNumber || !expiryMonth || !expiryYear || !cvv || !cardCpfCnpj) {
+        alert("Preencha todos os dados do cartão");
+        return;
+      }
+
+      if (cardNumber.replace(/\D/g, '').length < 13) {
+        alert("Número do cartão inválido");
+        return;
+      }
+
+      if (cvv.length < 3) {
+        alert("CVV inválido");
+        return;
+      }
+
+      const cpfCnpjNumbers = cardCpfCnpj.replace(/\D/g, '');
+      if (cpfCnpjNumbers.length !== 11 && cpfCnpjNumbers.length !== 14) {
+        alert("CPF/CNPJ inválido");
+        return;
+      }
+
+      // Salvar dados do cartão no sessionStorage
+      sessionStorage.setItem("checkout_card_data", JSON.stringify({
+        holderName: cardHolder,
+        number: cardNumber.replace(/\D/g, ''),
+        expiryMonth: expiryMonth.padStart(2, '0'),
+        expiryYear: expiryYear,
+        ccv: cvv,
+        holderInfo: {
+          cpfCnpj: cpfCnpjNumbers
+        }
+      }));
     }
 
     sessionStorage.setItem("checkout_payment_method", paymentMethod);
@@ -63,7 +119,14 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
         </div>
 
         <div className="space-y-3">
-          <div onClick={() => { setPaymentCategory("online"); handleMethodSelect("pix"); }} className={`p-4 border-2 rounded-xl cursor-pointer transition ${paymentCategory === "online" && paymentMethod === "pix" ? "border-emerald-500 bg-emerald-50" : "border-gray-300 hover:border-gray-400"}`}>
+          <div
+            onClick={() => { setPaymentCategory("online"); handleMethodSelect("pix"); }}
+            className={`p-4 border-2 rounded-xl cursor-pointer transition ${
+              paymentCategory === "online" && paymentMethod === "pix"
+                ? "border-emerald-500 bg-emerald-50"
+                : "border-gray-300 hover:border-gray-400"
+            }`}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -74,13 +137,26 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
                   <div className="text-sm text-gray-600">Aprovação imediata</div>
                 </div>
               </div>
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentCategory === "online" && paymentMethod === "pix" ? "border-emerald-500" : "border-gray-300"}`}>
-                {paymentCategory === "online" && paymentMethod === "pix" && <div className="w-3 h-3 rounded-full bg-emerald-500" />}
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                paymentCategory === "online" && paymentMethod === "pix"
+                  ? "border-emerald-500"
+                  : "border-gray-300"
+              }`}>
+                {paymentCategory === "online" && paymentMethod === "pix" && (
+                  <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                )}
               </div>
             </div>
           </div>
 
-          <div onClick={() => { setPaymentCategory("online"); handleMethodSelect("credit_card"); }} className={`p-4 border-2 rounded-xl cursor-pointer transition ${paymentCategory === "online" && paymentMethod === "credit_card" ? "border-emerald-500 bg-emerald-50" : "border-gray-300 hover:border-gray-400"}`}>
+          <div
+            onClick={() => { setPaymentCategory("online"); handleMethodSelect("credit_card"); }}
+            className={`p-4 border-2 rounded-xl cursor-pointer transition ${
+              paymentCategory === "online" && paymentMethod === "credit_card"
+                ? "border-emerald-500 bg-emerald-50"
+                : "border-gray-300 hover:border-gray-400"
+            }`}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,11 +167,94 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
                   <div className="text-sm text-gray-600">Pagamento rápido e seguro</div>
                 </div>
               </div>
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentCategory === "online" && paymentMethod === "credit_card" ? "border-emerald-500" : "border-gray-300"}`}>
-                {paymentCategory === "online" && paymentMethod === "credit_card" && <div className="w-3 h-3 rounded-full bg-emerald-500" />}
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                paymentCategory === "online" && paymentMethod === "credit_card"
+                  ? "border-emerald-500"
+                  : "border-gray-300"
+              }`}>
+                {paymentCategory === "online" && paymentMethod === "credit_card" && (
+                  <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                )}
               </div>
             </div>
           </div>
+
+          {/* Formulário do cartão de crédito */}
+          {showCardForm && paymentMethod === "credit_card" && (
+            <div className="mt-4 p-4 bg-gray-50 border-2 border-emerald-200 rounded-xl space-y-4">
+              <h4 className="font-bold text-gray-900">Dados do cartão</h4>
+              
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Nome no cartão *</label>
+                <input
+                  type="text"
+                  value={cardHolder}
+                  onChange={(e) => setCardHolder(e.target.value.toUpperCase())}
+                  placeholder="NOME COMO NO CARTÃO"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Número do cartão *</label>
+                <input
+                  type="text"
+                  value={formatCardNumber(cardNumber)}
+                  onChange={(e) => setCardNumber(e.target.value)}
+                  placeholder="0000 0000 0000 0000"
+                  maxLength={19}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Mês *</label>
+                  <input
+                    type="text"
+                    value={expiryMonth}
+                    onChange={(e) => setExpiryMonth(e.target.value.replace(/\D/g, '').slice(0, 2))}
+                    placeholder="MM"
+                    maxLength={2}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Ano *</label>
+                  <input
+                    type="text"
+                    value={expiryYear}
+                    onChange={(e) => setExpiryYear(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                    placeholder="AAAA"
+                    maxLength={4}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">CVV *</label>
+                  <input
+                    type="text"
+                    value={cvv}
+                    onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                    placeholder="123"
+                    maxLength={4}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">CPF/CNPJ do titular *</label>
+                <input
+                  type="text"
+                  value={cardCpfCnpj}
+                  onChange={(e) => setCardCpfCnpj(e.target.value)}
+                  placeholder="000.000.000-00"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -109,7 +268,14 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
         </div>
 
         <div className="space-y-3">
-          <div onClick={() => { setPaymentCategory("delivery"); handleMethodSelect("cash"); }} className={`p-4 border-2 rounded-xl cursor-pointer transition ${paymentCategory === "delivery" && paymentMethod === "cash" ? "border-emerald-500 bg-emerald-50" : "border-gray-300 hover:border-gray-400"}`}>
+          <div
+            onClick={() => { setPaymentCategory("delivery"); handleMethodSelect("cash"); }}
+            className={`p-4 border-2 rounded-xl cursor-pointer transition ${
+              paymentCategory === "delivery" && paymentMethod === "cash"
+                ? "border-emerald-500 bg-emerald-50"
+                : "border-gray-300 hover:border-gray-400"
+            }`}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,13 +283,26 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
                 </svg>
                 <div className="font-bold text-gray-900">Dinheiro</div>
               </div>
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentCategory === "delivery" && paymentMethod === "cash" ? "border-emerald-500" : "border-gray-300"}`}>
-                {paymentCategory === "delivery" && paymentMethod === "cash" && <div className="w-3 h-3 rounded-full bg-emerald-500" />}
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                paymentCategory === "delivery" && paymentMethod === "cash"
+                  ? "border-emerald-500"
+                  : "border-gray-300"
+              }`}>
+                {paymentCategory === "delivery" && paymentMethod === "cash" && (
+                  <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                )}
               </div>
             </div>
           </div>
 
-          <div onClick={() => { setPaymentCategory("delivery"); handleMethodSelect("credit_card_delivery"); }} className={`p-4 border-2 rounded-xl cursor-pointer transition ${paymentCategory === "delivery" && paymentMethod === "credit_card_delivery" ? "border-emerald-500 bg-emerald-50" : "border-gray-300 hover:border-gray-400"}`}>
+          <div
+            onClick={() => { setPaymentCategory("delivery"); handleMethodSelect("credit_card_delivery"); }}
+            className={`p-4 border-2 rounded-xl cursor-pointer transition ${
+              paymentCategory === "delivery" && paymentMethod === "credit_card_delivery"
+                ? "border-emerald-500 bg-emerald-50"
+                : "border-gray-300 hover:border-gray-400"
+            }`}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,13 +315,26 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
                   )}
                 </div>
               </div>
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentCategory === "delivery" && paymentMethod === "credit_card_delivery" ? "border-emerald-500" : "border-gray-300"}`}>
-                {paymentCategory === "delivery" && paymentMethod === "credit_card_delivery" && <div className="w-3 h-3 rounded-full bg-emerald-500" />}
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                paymentCategory === "delivery" && paymentMethod === "credit_card_delivery"
+                  ? "border-emerald-500"
+                  : "border-gray-300"
+              }`}>
+                {paymentCategory === "delivery" && paymentMethod === "credit_card_delivery" && (
+                  <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                )}
               </div>
             </div>
           </div>
 
-          <div onClick={() => { setPaymentCategory("delivery"); handleMethodSelect("debit_delivery"); }} className={`p-4 border-2 rounded-xl cursor-pointer transition ${paymentCategory === "delivery" && paymentMethod === "debit_delivery" ? "border-emerald-500 bg-emerald-50" : "border-gray-300 hover:border-gray-400"}`}>
+          <div
+            onClick={() => { setPaymentCategory("delivery"); handleMethodSelect("debit_delivery"); }}
+            className={`p-4 border-2 rounded-xl cursor-pointer transition ${
+              paymentCategory === "delivery" && paymentMethod === "debit_delivery"
+                ? "border-emerald-500 bg-emerald-50"
+                : "border-gray-300 hover:border-gray-400"
+            }`}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,13 +347,26 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
                   )}
                 </div>
               </div>
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentCategory === "delivery" && paymentMethod === "debit_delivery" ? "border-emerald-500" : "border-gray-300"}`}>
-                {paymentCategory === "delivery" && paymentMethod === "debit_delivery" && <div className="w-3 h-3 rounded-full bg-emerald-500" />}
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                paymentCategory === "delivery" && paymentMethod === "debit_delivery"
+                  ? "border-emerald-500"
+                  : "border-gray-300"
+              }`}>
+                {paymentCategory === "delivery" && paymentMethod === "debit_delivery" && (
+                  <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                )}
               </div>
             </div>
           </div>
 
-          <div onClick={() => { setPaymentCategory("delivery"); handleMethodSelect("meal_voucher"); }} className={`p-4 border-2 rounded-xl cursor-pointer transition ${paymentCategory === "delivery" && paymentMethod === "meal_voucher" ? "border-emerald-500 bg-emerald-50" : "border-gray-300 hover:border-gray-400"}`}>
+          <div
+            onClick={() => { setPaymentCategory("delivery"); handleMethodSelect("meal_voucher"); }}
+            className={`p-4 border-2 rounded-xl cursor-pointer transition ${
+              paymentCategory === "delivery" && paymentMethod === "meal_voucher"
+                ? "border-emerald-500 bg-emerald-50"
+                : "border-gray-300 hover:border-gray-400"
+            }`}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -169,13 +374,26 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
                 </svg>
                 <div className="font-bold text-gray-900">Vale refeição</div>
               </div>
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentCategory === "delivery" && paymentMethod === "meal_voucher" ? "border-emerald-500" : "border-gray-300"}`}>
-                {paymentCategory === "delivery" && paymentMethod === "meal_voucher" && <div className="w-3 h-3 rounded-full bg-emerald-500" />}
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                paymentCategory === "delivery" && paymentMethod === "meal_voucher"
+                  ? "border-emerald-500"
+                  : "border-gray-300"
+              }`}>
+                {paymentCategory === "delivery" && paymentMethod === "meal_voucher" && (
+                  <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                )}
               </div>
             </div>
           </div>
 
-          <div onClick={() => { setPaymentCategory("delivery"); handleMethodSelect("food_voucher"); }} className={`p-4 border-2 rounded-xl cursor-pointer transition ${paymentCategory === "delivery" && paymentMethod === "food_voucher" ? "border-emerald-500 bg-emerald-50" : "border-gray-300 hover:border-gray-400"}`}>
+          <div
+            onClick={() => { setPaymentCategory("delivery"); handleMethodSelect("food_voucher"); }}
+            className={`p-4 border-2 rounded-xl cursor-pointer transition ${
+              paymentCategory === "delivery" && paymentMethod === "food_voucher"
+                ? "border-emerald-500 bg-emerald-50"
+                : "border-gray-300 hover:border-gray-400"
+            }`}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -183,8 +401,14 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
                 </svg>
                 <div className="font-bold text-gray-900">Vale alimentação</div>
               </div>
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentCategory === "delivery" && paymentMethod === "food_voucher" ? "border-emerald-500" : "border-gray-300"}`}>
-                {paymentCategory === "delivery" && paymentMethod === "food_voucher" && <div className="w-3 h-3 rounded-full bg-emerald-500" />}
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                paymentCategory === "delivery" && paymentMethod === "food_voucher"
+                  ? "border-emerald-500"
+                  : "border-gray-300"
+              }`}>
+                {paymentCategory === "delivery" && paymentMethod === "food_voucher" && (
+                  <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                )}
               </div>
             </div>
           </div>
@@ -198,12 +422,19 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
             <h3 className="text-xl font-bold text-gray-900 mb-4">Selecione a bandeira do cartão</h3>
             <div className="space-y-3">
               {["Visa", "Mastercard", "Elo"].map((brand) => (
-                <button key={brand} onClick={() => handleCardBrandSelect(brand)} className="w-full p-4 border-2 border-gray-300 hover:border-emerald-500 rounded-xl text-left font-bold text-gray-900 transition">
+                <button
+                  key={brand}
+                  onClick={() => handleCardBrandSelect(brand)}
+                  className="w-full p-4 border-2 border-gray-300 hover:border-emerald-500 rounded-xl text-left font-bold text-gray-900 transition"
+                >
                   {brand}
                 </button>
               ))}
             </div>
-            <button onClick={() => setShowCardBrandModal(false)} className="w-full mt-4 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50">
+            <button
+              onClick={() => setShowCardBrandModal(false)}
+              className="w-full mt-4 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50"
+            >
               Cancelar
             </button>
           </div>
@@ -211,10 +442,16 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
       )}
 
       <div className="flex gap-4">
-        <button onClick={onBack} className="flex-1 py-4 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50">
+        <button
+          onClick={onBack}
+          className="flex-1 py-4 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50"
+        >
           Voltar
         </button>
-        <button onClick={handleNext} className="flex-1 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold rounded-xl shadow-lg">
+        <button
+          onClick={handleNext}
+          className="flex-1 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold rounded-xl shadow-lg"
+        >
           Próximo
         </button>
       </div>
