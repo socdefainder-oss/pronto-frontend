@@ -27,6 +27,15 @@ export default function CustomerStep({ onBack, restaurantId }: CustomerStepProps
       return;
     }
 
+    // Validar CPF/CNPJ para pagamentos online
+    const paymentMethod = sessionStorage.getItem("checkout_payment_method") || "pix";
+    if (paymentMethod === "pix" || paymentMethod === "credit_card") {
+      if (!cpfCnpj || cpfCnpj.length < 11) {
+        alert("CPF/CNPJ é obrigatório para pagamentos online");
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -93,7 +102,8 @@ export default function CustomerStep({ onBack, restaurantId }: CustomerStepProps
             }
           } else {
             const error = await paymentResponse.json();
-            alert(`Erro ao processar pagamento: ${error.error || "Tente novamente"}`);
+            console.error("Erro no pagamento:", error);
+            alert(`Erro ao processar pagamento: ${error.error || "Verifique os dados e tente novamente"}`);
           }
         } catch (paymentError) {
           console.error("Erro ao criar pagamento:", paymentError);
@@ -137,8 +147,8 @@ export default function CustomerStep({ onBack, restaurantId }: CustomerStepProps
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Pedido criado com sucesso!</h2>
-          <p className="text-gray-600">Escaneie o QR Code para pagar com PIX</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Pedido #{pixData.orderId?.substring(0, 8)} criado!</h2>
+          <p className="text-gray-600">Escaneie o QR Code abaixo ou copie o código PIX para pagar</p>
         </div>
 
         {pixData.pixQrCodeUrl && (
@@ -227,15 +237,19 @@ export default function CustomerStep({ onBack, restaurantId }: CustomerStepProps
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">CPF/CNPJ</label>
+          <label className="block text-sm font-bold text-gray-700 mb-2">CPF/CNPJ {(sessionStorage.getItem("checkout_payment_method") === "pix" || sessionStorage.getItem("checkout_payment_method") === "credit_card") && <span className="text-red-500">*</span>}</label>
           <input
             type="text"
             value={cpfCnpj}
             onChange={(e) => setCpfCnpj(e.target.value.replace(/\D/g, ''))}
             placeholder="000.000.000-00"
-            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${(sessionStorage.getItem("checkout_payment_method") === "pix" || sessionStorage.getItem("checkout_payment_method") === "credit_card") ? "border-emerald-300" : "border-gray-300"}`}
           />
-          <p className="text-xs text-gray-500 mt-1">Necessário para pagamentos online</p>
+          <p className="text-xs text-gray-500 mt-1">
+            {(sessionStorage.getItem("checkout_payment_method") === "pix" || sessionStorage.getItem("checkout_payment_method") === "credit_card") 
+              ? "⚠️ Obrigatório para pagamentos online (PIX e Cartão)" 
+              : "Opcional para pagamentos na entrega"}
+          </p>
         </div>
       </div>
 

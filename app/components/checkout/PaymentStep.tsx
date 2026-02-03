@@ -134,7 +134,7 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
                 </svg>
                 <div>
                   <div className="font-bold text-gray-900">Pix</div>
-                  <div className="text-sm text-gray-600">Aprovação imediata</div>
+                  <div className="text-sm text-gray-600">Aprovação imediata • CPF/CNPJ obrigatório</div>
                 </div>
               </div>
               <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
