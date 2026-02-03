@@ -155,10 +155,10 @@ export default function KitchenPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-6">
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-3xl font-bold text-gray-900">Cozinha</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Cozinha</h1>
           <button
             onClick={fetchKitchenData}
             className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition flex items-center gap-2"
@@ -171,7 +171,7 @@ export default function KitchenPage() {
         </div>
 
         {stats && (
-          <div className="grid grid-cols-5 gap-4 mb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 mb-4">
             <div className="bg-white rounded-lg shadow p-4">
               <div className="text-2xl font-bold text-blue-600">{stats.pending}</div>
               <div className="text-sm text-gray-600">Novos</div>
@@ -196,7 +196,7 @@ export default function KitchenPage() {
         )}
 
         {categories.length > 0 && (
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap overflow-x-auto pb-2">
             <button
               onClick={() => setSelectedCategory(null)}
               className={`px-4 py-2 rounded-lg transition ${selectedCategory === null ? "bg-emerald-600 text-white" : "bg-white text-gray-700 hover:bg-gray-50"}`}
@@ -216,7 +216,7 @@ export default function KitchenPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <span className="w-3 h-3 bg-blue-500 rounded-full"></span>

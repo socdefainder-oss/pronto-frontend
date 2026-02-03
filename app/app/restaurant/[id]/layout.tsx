@@ -8,7 +8,7 @@ export default function RestaurantLayout({
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pt-16 lg:pt-0">
         {children}
       </main>
     </div>

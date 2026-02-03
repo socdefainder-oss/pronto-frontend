@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
@@ -13,12 +13,18 @@ export default function Sidebar() {
     "Administrar Loja": true,
   });
   const [restaurantName, setRestaurantName] = useState<string>("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (restaurantId) {
       loadRestaurantName();
     }
   }, [restaurantId]);
+
+  // Fechar menu mobile ao navegar
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   async function loadRestaurantName() {
     const token = getToken();
@@ -174,143 +180,176 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col min-h-screen">
-      {/* Logo */}
-      <div className="p-6 border-b border-gray-200">
-        <Link href="/app" className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-white font-bold text-xl">P</span>
-          </div>
-          <span className="text-xl font-bold text-gray-900">pronto</span>
-        </Link>
-        {restaurantName && (
-          <div className="mt-2 px-3 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg">
-            <p className="text-xs text-emerald-600 font-medium mb-0.5">Gerenciando:</p>
-            <p className="text-sm font-bold text-gray-900 truncate" title={restaurantName}>
-              {restaurantName}
-            </p>
-          </div>
-        )}
-      </div>
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-emerald-600 text-white rounded-lg shadow-lg"
+        aria-label="Toggle menu"
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {isMobileMenuOpen ? (
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          ) : (
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          )}
+        </svg>
+      </button>
 
-      {/* Menu */}
-      <nav className="flex-1 overflow-y-auto p-4">
-        <ul className="space-y-1">
-          {menuItems.map((item) => {
-            const active = isActive(item.href) || hasActiveSubItem(item.subItems);
-            const isExpanded = expandedMenus[item.label];
-            
-            return (
-              <li key={item.href}>
-                {item.hasDropdown ? (
-                  <>
-                    <button
-                      onClick={() => toggleMenu(item.label)}
-                      className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-colors ${
-                        active
-                          ? "bg-emerald-50 text-emerald-700 font-semibold"
-                          : "text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
+      {/* Overlay para mobile */}
+      {isMobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`
+          fixed lg:static inset-y-0 left-0 z-40
+          w-64 bg-white border-r border-gray-200 flex flex-col min-h-screen
+          transform transition-transform duration-300 ease-in-out
+          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
+        {/* Logo */}
+        <div className="p-6 border-b border-gray-200">
+          <Link href="/app" className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-xl">P</span>
+            </div>
+            <span className="text-xl font-bold text-gray-900">pronto</span>
+          </Link>
+          {restaurantName && (
+            <div className="mt-2 px-3 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg">
+              <p className="text-xs text-emerald-600 font-medium mb-0.5">Gerenciando:</p>
+              <p className="text-sm font-bold text-gray-900 truncate" title={restaurantName}>
+                {restaurantName}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Menu */}
+        <nav className="flex-1 overflow-y-auto p-4">
+          <ul className="space-y-1">
+            {menuItems.map((item) => {
+              const active = isActive(item.href) || hasActiveSubItem(item.subItems);
+              const isExpanded = expandedMenus[item.label];
+
+              return (
+                <li key={item.href}>
+                  {item.hasDropdown ? (
+                    <>
+                      <button
+                        onClick={() => toggleMenu(item.label)}
+                        className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-colors ${
+                          active
+                            ? "bg-emerald-50 text-emerald-700 font-semibold"
+                            : "text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className={active ? "text-emerald-600" : "text-gray-500"}>
+                            {item.icon}
+                          </span>
+                          <span className="text-sm">{item.label}</span>
+                        </div>
+                        <svg
+                          className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-0' : '-rotate-90'}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      {isExpanded && item.subItems && (
+                        <ul className="ml-8 mt-1 space-y-1">
+                          {item.subItems.map((subItem) => (
+                            <li key={subItem.href}>
+                              <Link
+                                href={subItem.href}
+                                className={`block px-4 py-2 text-sm rounded-lg transition-colors ${
+                                  pathname.includes('settings')
+                                    ? "text-emerald-700 hover:bg-emerald-50"
+                                    : "text-gray-600 hover:bg-gray-50"
+                                }`}
+                              >
+                                {subItem.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        href={item.href}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                          active
+                            ? "bg-emerald-50 text-emerald-700 font-semibold"
+                            : "text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
                         <span className={active ? "text-emerald-600" : "text-gray-500"}>
                           {item.icon}
                         </span>
                         <span className="text-sm">{item.label}</span>
-                      </div>
-                      <svg
-                        className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-0' : '-rotate-90'}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    {isExpanded && item.subItems && (
-                      <ul className="ml-8 mt-1 space-y-1">
-                        {item.subItems.map((subItem) => (
-                          <li key={subItem.href}>
-                            <Link
-                              href={subItem.href}
-                              className={`block px-4 py-2 text-sm rounded-lg transition-colors ${
-                                pathname.includes('settings')
-                                  ? "text-emerald-700 hover:bg-emerald-50"
-                                  : "text-gray-600 hover:bg-gray-50"
-                              }`}
-                            >
-                              {subItem.label}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      href={item.href}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                        active
-                          ? "bg-emerald-50 text-emerald-700 font-semibold"
-                          : "text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      <span className={active ? "text-emerald-600" : "text-gray-500"}>
-                        {item.icon}
-                      </span>
-                      <span className="text-sm">{item.label}</span>
-                    </Link>
-                    {item.subItems && hasActiveSubItem(item.subItems) && (
-                      <ul className="ml-8 mt-1 space-y-1">
-                        {item.subItems.map((subItem) => (
-                          <li key={subItem.href}>
-                            <Link
-                              href={subItem.href}
-                              className={`block px-4 py-2 text-sm rounded-lg transition-colors ${
-                                isActive(subItem.href)
-                                  ? "bg-emerald-50 text-emerald-700 font-medium"
-                                  : "text-gray-600 hover:bg-gray-50"
-                              }`}
-                            >
-                              {subItem.label}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+                      </Link>
+                      {item.subItems && hasActiveSubItem(item.subItems) && (
+                        <ul className="ml-8 mt-1 space-y-1">
+                          {item.subItems.map((subItem) => (
+                            <li key={subItem.href}>
+                              <Link
+                                href={subItem.href}
+                                className={`block px-4 py-2 text-sm rounded-lg transition-colors ${
+                                  isActive(subItem.href)
+                                    ? "bg-emerald-50 text-emerald-700 font-medium"
+                                    : "text-gray-600 hover:bg-gray-50"
+                                }`}
+                              >
+                                {subItem.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-200">
-        <Link
-          href="/app"
-          className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors mb-2"
-        >
-          <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
-          <span className="text-sm">Meus Restaurantes</span>
-        </Link>
-        <button
-          onClick={() => {
-            clearToken();
-            window.location.href = "/";
-          }}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-700 hover:bg-red-50 transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          <span className="text-sm font-medium">Sair</span>
-        </button>
-      </div>
-    </aside>
+        {/* Footer */}
+        <div className="p-4 border-t border-gray-200">
+          <Link
+            href="/app"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors mb-2"
+          >
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span className="text-sm">Meus Restaurantes</span>
+          </Link>
+          <button
+            onClick={() => {
+              clearToken();
+              window.location.href = "/";
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-700 hover:bg-red-50 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span className="text-sm font-medium">Sair</span>
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }
