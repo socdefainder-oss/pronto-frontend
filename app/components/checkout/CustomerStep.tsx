@@ -8,10 +8,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.
 
 interface CustomerStepProps {
   onBack: () => void;
-  restaurantId: string;
+  restaurantSlug: string;
 }
 
-export default function CustomerStep({ onBack, restaurantId }: CustomerStepProps) {
+export default function CustomerStep({ onBack, restaurantSlug }: CustomerStepProps) {
   const router = useRouter();
   const { cart, clearCart } = useCart();
   const [name, setName] = useState("");
@@ -98,7 +98,7 @@ export default function CustomerStep({ onBack, restaurantId }: CustomerStepProps
               clearCart();
               sessionStorage.clear();
               alert(`Pedido #${order.orderNumber} criado com sucesso!\nPagamento processado.`);
-              router.push(`/r/${restaurantId}`);
+              router.push(`/r/${restaurantSlug}`);
             }
           } else {
             const error = await paymentResponse.json();
@@ -114,7 +114,7 @@ export default function CustomerStep({ onBack, restaurantId }: CustomerStepProps
         clearCart();
         sessionStorage.clear();
         alert(`Pedido #${order.orderNumber} criado com sucesso!\nO restaurante receberá sua solicitação.`);
-        router.push(`/r/${restaurantId}`);
+        router.push(`/r/${restaurantSlug}`);
       }
     } catch (error) {
       console.error("Erro ao finalizar pedido:", error);
@@ -134,7 +134,7 @@ export default function CustomerStep({ onBack, restaurantId }: CustomerStepProps
   const handlePixComplete = () => {
     clearCart();
     sessionStorage.clear();
-    router.push(`/r/${restaurantId}`);
+    router.push(`/r/${restaurantSlug}`);
   };
 
   // Se tiver dados PIX, mostrar QR Code

@@ -106,7 +106,7 @@ export default function CheckoutPage({ params }: { params: { slug: string } }) {
             <PaymentStep onNext={() => setCurrentStep(4)} onBack={() => setCurrentStep(2)} />
           )}
           {currentStep === 4 && (
-            <CustomerStep onBack={() => setCurrentStep(3)} restaurantId={restaurant?.id} />
+            <CustomerStep onBack={() => setCurrentStep(3)} restaurantSlug={slug} />
           )}
         </div>
       </div>
