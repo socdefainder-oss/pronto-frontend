@@ -97,13 +97,12 @@ export default function CustomerStep({ onBack, restaurantSlug }: CustomerStepPro
             
             if (paymentMethod === "pix") {
               // Mostrar QR Code do PIX
-              setPixData(paymentData);
+              setPixData({ ...paymentData, orderId: order.id });
             } else {
               // Cartão de crédito processado
               clearCart();
               sessionStorage.clear();
-              alert(`Pedido #${order.orderNumber} criado com sucesso!\nPagamento processado.`);
-              router.push(`/r/${restaurantSlug}`);
+              router.push(`/pedido/${order.id}`);
             }
           } else {
             const error = await paymentResponse.json();
@@ -118,8 +117,7 @@ export default function CustomerStep({ onBack, restaurantSlug }: CustomerStepPro
         // Pagamento na entrega - mostrar sucesso
         clearCart();
         sessionStorage.clear();
-        alert(`Pedido #${order.orderNumber} criado com sucesso!\nO restaurante receberá sua solicitação.`);
-        router.push(`/r/${restaurantSlug}`);
+        router.push(`/pedido/${order.id}`);
       }
     } catch (error) {
       console.error("Erro ao finalizar pedido:", error);
@@ -139,7 +137,7 @@ export default function CustomerStep({ onBack, restaurantSlug }: CustomerStepPro
   const handlePixComplete = () => {
     clearCart();
     sessionStorage.clear();
-    router.push(`/r/${restaurantSlug}`);
+    router.push(`/pedido/${pixData.orderId || pixData.id}`);
   };
 
   // Se tiver dados PIX, mostrar QR Code
