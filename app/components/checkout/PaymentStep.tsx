@@ -77,6 +77,17 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
         return;
       }
 
+      // Validar nome no cartão (apenas letras e espaços)
+      if (!/^[A-Za-z\s]+$/.test(cardHolder)) {
+        alert("Nome no cartão inválido. Digite apenas o nome impresso no cartão (sem números ou caracteres especiais).");
+        return;
+      }
+
+      if (cardHolder.trim().length < 3) {
+        alert("Nome no cartão muito curto");
+        return;
+      }
+
       if (cardNumber.replace(/\D/g, '').length < 13) {
         alert("Número do cartão inválido");
         return;
@@ -204,14 +215,21 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
           
           <div className="bg-white p-4 rounded-xl space-y-4">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Nome no cartão *</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Nome impresso no cartão *</label>
               <input
                 type="text"
                 value={cardHolder}
-                onChange={(e) => setCardHolder(e.target.value.toUpperCase())}
-                placeholder="NOME COMO NO CARTÃO"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Permitir apenas letras e espaços
+                  if (/^[A-Za-z\s]*$/.test(value)) {
+                    setCardHolder(value.toUpperCase());
+                  }
+                }}
+                placeholder="MARIA SILVA" 
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
+              <p className="text-xs text-gray-500 mt-1">Digite exatamente como está impresso no cartão</p>
             </div>
 
             <div>
