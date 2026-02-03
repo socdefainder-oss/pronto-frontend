@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
+import { validateCpfCnpj, formatCpfCnpj } from "@/app/lib/validateCpfCnpj";
 
 interface PaymentStepProps {
   onNext: () => void;
@@ -101,6 +102,11 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
       const cpfCnpjNumbers = cardCpfCnpj.replace(/\D/g, '');
       if (cpfCnpjNumbers.length !== 11 && cpfCnpjNumbers.length !== 14) {
         alert("CPF/CNPJ inválido");
+        return;
+      }
+
+      if (!validateCpfCnpj(cpfCnpjNumbers)) {
+        alert("CPF/CNPJ inválido. Verifique os números digitados.");
         return;
       }
 
@@ -284,11 +290,13 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
               <label className="block text-sm font-bold text-gray-700 mb-2">CPF/CNPJ do titular *</label>
               <input
                 type="text"
-                value={cardCpfCnpj}
-                onChange={(e) => setCardCpfCnpj(e.target.value)}
-                placeholder="000.000.000-00"
+                value={formatCpfCnpj(cardCpfCnpj)}
+                onChange={(e) => setCardCpfCnpj(e.target.value.replace(/\D/g, ''))}
+                placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                maxLength={18}
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
+              <p className="text-xs text-gray-500 mt-1">Digite um CPF ou CNPJ válido</p>
             </div>
           </div>
         </div>

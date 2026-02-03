@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useCart } from "@/app/lib/CartContext";
 import { useRouter } from "next/navigation";
+import { validateCpfCnpj, formatCpfCnpj } from "@/app/lib/validateCpfCnpj";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
 
@@ -32,6 +33,11 @@ export default function CustomerStep({ onBack, restaurantSlug }: CustomerStepPro
     if (paymentMethod === "pix" || paymentMethod === "credit_card") {
       if (!cpfCnpj || cpfCnpj.length < 11) {
         alert("CPF/CNPJ é obrigatório para pagamentos online");
+        return;
+      }
+
+      if (!validateCpfCnpj(cpfCnpj)) {
+        alert("CPF/CNPJ inválido. Verifique os números digitados.");
         return;
       }
     }
@@ -243,14 +249,15 @@ export default function CustomerStep({ onBack, restaurantSlug }: CustomerStepPro
           <label className="block text-sm font-bold text-gray-700 mb-2">CPF/CNPJ {(sessionStorage.getItem("checkout_payment_method") === "pix" || sessionStorage.getItem("checkout_payment_method") === "credit_card") && <span className="text-red-500">*</span>}</label>
           <input
             type="text"
-            value={cpfCnpj}
+            value={formatCpfCnpj(cpfCnpj)}
             onChange={(e) => setCpfCnpj(e.target.value.replace(/\D/g, ''))}
-            placeholder="000.000.000-00"
+            placeholder="000.000.000-00 ou 00.000.000/0000-00"
+            maxLength={18}
             className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${(sessionStorage.getItem("checkout_payment_method") === "pix" || sessionStorage.getItem("checkout_payment_method") === "credit_card") ? "border-emerald-300" : "border-gray-300"}`}
           />
           <p className="text-xs text-gray-500 mt-1">
             {(sessionStorage.getItem("checkout_payment_method") === "pix" || sessionStorage.getItem("checkout_payment_method") === "credit_card") 
-              ? "⚠️ Obrigatório para pagamentos online (PIX e Cartão)" 
+              ? "⚠️ Obrigatório e deve ser válido para pagamentos online" 
               : "Opcional para pagamentos na entrega"}
           </p>
         </div>
