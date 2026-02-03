@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
 
@@ -19,8 +19,8 @@ interface Coupon {
   createdAt: string;
 }
 
-export default function CouponsPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: restaurantId } = use(params);
+export default function CouponsPage({ params }: { params: { id: string } }) {
+  const { id: restaurantId } = params;
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);

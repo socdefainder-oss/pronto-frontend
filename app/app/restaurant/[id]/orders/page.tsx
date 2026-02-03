@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
@@ -52,8 +52,8 @@ const statusColors: Record<string, string> = {
   cancelled: "bg-red-100 text-red-800 border-red-300",
 };
 
-export default function OrdersPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: restaurantId } = use(params);
+export default function OrdersPage({ params }: { params: { id: string } }) {
+  const { id: restaurantId } = params;
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
