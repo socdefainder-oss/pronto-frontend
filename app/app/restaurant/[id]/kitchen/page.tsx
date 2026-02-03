@@ -18,7 +18,7 @@ interface Order {
     name: string;
     phone: string;
   };
-  address: {
+  address?: {
     district: string;
     street: string;
     number: string;
@@ -190,7 +190,7 @@ export default function KitchenPage() {
             </div>
             <div className="bg-white rounded-lg shadow p-4">
               <div className="text-2xl font-bold text-gray-900">{stats.averagePrepTimeMinutes}min</div>
-              <div className="text-sm text-gray-600">Tempo Médio</div>
+              <div className="text-sm text-gray-600">Tempo M├®dio</div>
             </div>
           </div>
         )}
@@ -335,12 +335,12 @@ function OrderCard({
       </div>
 
       <div className={`mb-3 px-3 py-2 rounded-lg font-semibold text-center ${timerColor}`}>
-        ⏱️ {elapsedMinutes} minutos
+        ÔÅ▒´©Å {elapsedMinutes} minutos
       </div>
 
       <div className="mb-3 text-sm">
         <div className="font-semibold text-gray-900">{order.customer.name}</div>
-        <div className="text-gray-600">{order.address.district}</div>
+        <div className="text-gray-600">{order.address?.district || "Retirada"}</div>
         <div className="text-gray-500 text-xs">{order.customer.phone}</div>
       </div>
 
