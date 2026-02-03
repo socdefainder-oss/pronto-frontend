@@ -178,85 +178,93 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Formulário do cartão de crédito */}
-          {showCardForm && paymentMethod === "credit_card" && (
-            <div className="mt-4 p-4 bg-gray-50 border-2 border-emerald-200 rounded-xl space-y-4">
-              <h4 className="font-bold text-gray-900">Dados do cartão</h4>
-              
+      {/* Formulário do cartão de crédito - SEPARADO */}
+      {showCardForm && paymentMethod === "credit_card" && (
+        <div className="p-6 bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-300 rounded-2xl space-y-4 shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+            <h4 className="text-xl font-bold text-gray-900">Dados do cartão de crédito</h4>
+          </div>
+          <p className="text-sm text-gray-600 mb-4">Preencha os dados do seu cartão para finalizar o pagamento</p>
+          
+          <div className="bg-white p-4 rounded-xl space-y-4">
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Nome no cartão *</label>
+              <input
+                type="text"
+                value={cardHolder}
+                onChange={(e) => setCardHolder(e.target.value.toUpperCase())}
+                placeholder="NOME COMO NO CARTÃO"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Número do cartão *</label>
+              <input
+                type="text"
+                value={formatCardNumber(cardNumber)}
+                onChange={(e) => setCardNumber(e.target.value)}
+                placeholder="0000 0000 0000 0000"
+                maxLength={19}
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Nome no cartão *</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Mês *</label>
                 <input
                   type="text"
-                  value={cardHolder}
-                  onChange={(e) => setCardHolder(e.target.value.toUpperCase())}
-                  placeholder="NOME COMO NO CARTÃO"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                  value={expiryMonth}
+                  onChange={(e) => setExpiryMonth(e.target.value.replace(/\D/g, '').slice(0, 2))}
+                  placeholder="MM"
+                  maxLength={2}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Número do cartão *</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Ano *</label>
                 <input
                   type="text"
-                  value={formatCardNumber(cardNumber)}
-                  onChange={(e) => setCardNumber(e.target.value)}
-                  placeholder="0000 0000 0000 0000"
-                  maxLength={19}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                  value={expiryYear}
+                  onChange={(e) => setExpiryYear(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  placeholder="AAAA"
+                  maxLength={4}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Mês *</label>
-                  <input
-                    type="text"
-                    value={expiryMonth}
-                    onChange={(e) => setExpiryMonth(e.target.value.replace(/\D/g, '').slice(0, 2))}
-                    placeholder="MM"
-                    maxLength={2}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Ano *</label>
-                  <input
-                    type="text"
-                    value={expiryYear}
-                    onChange={(e) => setExpiryYear(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                    placeholder="AAAA"
-                    maxLength={4}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">CVV *</label>
-                  <input
-                    type="text"
-                    value={cvv}
-                    onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                    placeholder="123"
-                    maxLength={4}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-              </div>
-
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">CPF/CNPJ do titular *</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">CVV *</label>
                 <input
                   type="text"
-                  value={cardCpfCnpj}
-                  onChange={(e) => setCardCpfCnpj(e.target.value)}
-                  placeholder="000.000.000-00"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                  value={cvv}
+                  onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  placeholder="123"
+                  maxLength={4}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
             </div>
-          )}
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">CPF/CNPJ do titular *</label>
+              <input
+                type="text"
+                value={cardCpfCnpj}
+                onChange={(e) => setCardCpfCnpj(e.target.value)}
+                placeholder="000.000.000-00"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              />
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Pagar na entrega */}
       <div>
