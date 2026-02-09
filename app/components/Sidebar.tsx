@@ -14,10 +14,13 @@ export default function Sidebar() {
   });
   const [restaurantName, setRestaurantName] = useState<string>("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [restaurants, setRestaurants] = useState<Array<{ id: string; name: string }>>([]);
+  const [showRestaurantDropdown, setShowRestaurantDropdown] = useState(false);
 
   useEffect(() => {
     if (restaurantId) {
       loadRestaurantName();
+      loadAllRestaurants();
     }
   }, [restaurantId]);
 
@@ -25,6 +28,21 @@ export default function Sidebar() {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as HTMLElement;
+      if (showRestaurantDropdown && !target.closest('.relative')) {
+        setShowRestaurantDropdown(false);
+      }
+    }
+
+    if (showRestaurantDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showRestaurantDropdown]);
 
   async function loadRestaurantName() {
     const token = getToken();
@@ -41,6 +59,24 @@ export default function Sidebar() {
       }
     } catch (err) {
       console.error("Erro ao carregar nome do restaurante:", err);
+    }
+  }
+
+  async function loadAllRestaurants() {
+    const token = getToken();
+    if (!token) return;
+
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
+      const res = await fetch(`${API_URL}/api/restaurants/mine`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setRestaurants(data.restaurants || []);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar restaurantes:", err);
     }
   }
 
@@ -222,11 +258,64 @@ export default function Sidebar() {
             <span className="text-xl font-bold text-gray-900">pronto</span>
           </Link>
           {restaurantName && (
-            <div className="mt-2 px-3 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg">
-              <p className="text-xs text-emerald-600 font-medium mb-0.5">Gerenciando:</p>
-              <p className="text-sm font-bold text-gray-900 truncate" title={restaurantName}>
-                {restaurantName}
-              </p>
+            <div className="relative mt-2">
+              <button
+                onClick={() => setShowRestaurantDropdown(!showRestaurantDropdown)}
+                className="w-full px-3 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg hover:border-emerald-300 transition-colors group"
+              >
+                <p className="text-xs text-emerald-600 font-medium mb-0.5">Gerenciando:</p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-bold text-gray-900 truncate" title={restaurantName}>
+                    {restaurantName}
+                  </p>
+                  <svg 
+                    className={`w-4 h-4 text-emerald-600 transition-transform flex-shrink-0 ${showRestaurantDropdown ? 'rotate-180' : ''}`}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </button>
+              
+              {/* Dropdown */}
+              {showRestaurantDropdown && restaurants.length > 1 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-64 overflow-y-auto">
+                  <div className="py-1">
+                    <p className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                      Trocar para:
+                    </p>
+                    {restaurants.filter(r => r.id !== restaurantId).map((restaurant) => (
+                      <Link
+                        key={restaurant.id}
+                        href={`/app/restaurant/${restaurant.id}`}
+                        className="block px-3 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                        onClick={() => setShowRestaurantDropdown(false)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                          {restaurant.name}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="border-t border-gray-200 py-1">
+                    <Link
+                      href="/app"
+                      className="block px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+                      onClick={() => setShowRestaurantDropdown(false)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        Ver todas as lojas
+                      </div>
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
