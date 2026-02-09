@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -13,6 +13,8 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [banners, setBanners] = useState<any[]>([]);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [showCategoryBar, setShowCategoryBar] = useState(false);
 
   useEffect(() => {
     async function loadRestaurant() {
@@ -55,6 +57,34 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
 
     loadBanners();
   }, [restaurant?.id]);
+
+  // Controla visibilidade da barra de categorias baseado no scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      setShowCategoryBar(scrollY > 400);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Função para scroll suave até categoria
+  const scrollToCategory = (categoryId: string) => {
+    const element = document.getElementById(`category-${categoryId}`);
+    if (element) {
+      const offset = 140; // Header + category bar height
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.scrollY - offset;
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+      
+      setActiveCategory(categoryId);
+    }
+  };
 
   if (loading) {
     return (
@@ -114,6 +144,43 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
           </div>
         </div>
       </header>
+
+      {/* Category Navigation Bar - Sticky */}
+      {showCategoryBar && hasProducts && (
+        <div className="sticky top-[73px] z-30 bg-white border-b border-gray-200 shadow-md">
+          <div className="max-w-6xl mx-auto px-4 py-3 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-2 min-w-max">
+              {restaurant?.categories?.map((category: any) => (
+                category.products?.length > 0 && (
+                  <button
+                    key={category.id}
+                    onClick={() => scrollToCategory(category.id)}
+                    className={`px-4 py-2 rounded-lg font-semibold transition whitespace-nowrap ${
+                      activeCategory === category.id
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-emerald-50 hover:text-emerald-700'
+                    }`}
+                  >
+                    {category.name}
+                  </button>
+                )
+              ))}
+              {restaurant?.productsWithoutCategory?.length > 0 && (
+                <button
+                  onClick={() => scrollToCategory('outros')}
+                  className={`px-4 py-2 rounded-lg font-semibold transition whitespace-nowrap ${
+                    activeCategory === 'outros'
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-emerald-50 hover:text-emerald-700'
+                  }`}
+                >
+                  Outros itens
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       <div className="relative max-w-6xl mx-auto px-4 py-8">
@@ -205,7 +272,7 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
 
               {restaurant?.categories?.map((category: any) => (
                 category.products?.length > 0 && (
-                  <div key={category.id} className="mb-12 last:mb-0">
+                  <div key={category.id} id={`category-${category.id}`} className="mb-12 last:mb-0 scroll-mt-36">
                     <h3 className="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b-2 border-gray-200">
                       {category.name}
                     </h3>
@@ -219,7 +286,7 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
               ))}
 
               {restaurant?.productsWithoutCategory?.length > 0 && (
-                <div className="mb-12 last:mb-0">
+                <div id="category-outros" className="mb-12 last:mb-0 scroll-mt-36">
                   <h3 className="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b-2 border-gray-200">
                     Outros itens
                   </h3>
@@ -237,7 +304,7 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
 
       {/* Floating Cart Button */}
       {cartCount > 0 && (
-        <Link 
+        <Link
           href={`/r/${slug}/checkout`}
           className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-4 rounded-2xl shadow-2xl hover:shadow-emerald-600/50 transition-all hover:scale-105 flex items-center gap-3"
         >
@@ -250,6 +317,16 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
           </div>
         </Link>
       )}
+
+      <style jsx global>{`
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 }
