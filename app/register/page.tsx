@@ -13,6 +13,8 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
 
@@ -83,6 +85,31 @@ export default function RegisterPage() {
       }
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleResendEmail() {
+    setResendLoading(true);
+    setResendMessage("");
+
+    try {
+      const res = await fetch(`${API_URL}/api/auth/resend-verification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Erro ao reenviar email");
+      }
+
+      setResendMessage("✅ Email reenviado com sucesso!");
+    } catch (err: any) {
+      setResendMessage(`❌ ${err.message || "Erro ao reenviar email"}`);
+    } finally {
+      setResendLoading(false);
     }
   }
 
@@ -165,12 +192,25 @@ export default function RegisterPage() {
             Voltar para o login
           </Link>
 
-          <p className="text-xs text-gray-400">
-            Não recebeu o email após 5 minutos?{" "}
-            <button className="text-emerald-600 hover:underline font-medium">
-              Reenviar email
+          {/* Botão de reenviar */}
+          <div className="text-center">
+            {resendMessage ? (
+              <p className={`text-sm mb-2 ${resendMessage.includes('✅') ? 'text-emerald-600' : 'text-red-600'}`}>
+                {resendMessage}
+              </p>
+            ) : null}
+            
+            <p className="text-xs text-gray-400 mb-2">
+              Não recebeu o email após 5 minutos?
+            </p>
+            <button
+              onClick={handleResendEmail}
+              disabled={resendLoading}
+              className="text-emerald-600 hover:underline font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {resendLoading ? "Reenviando..." : "Reenviar email"}
             </button>
-          </p>
+          </div>
         </div>
       </div>
     );
