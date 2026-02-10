@@ -90,7 +90,7 @@ export default function RegisterPage() {
   if (success) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-6">
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 text-center relative">
+        <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl p-8 text-center relative">
           <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg
               className="w-10 h-10 text-emerald-600"
@@ -108,25 +108,68 @@ export default function RegisterPage() {
           </div>
 
           <h2 className="text-3xl font-bold text-gray-900 mb-3">
-            Verifique seu email!
+            📧 Verifique seu email!
           </h2>
-          <p className="text-gray-600 mb-4">
-            Enviamos um link de confirmação para{" "}
-            <strong className="text-emerald-600">{email}</strong>
+          
+          <p className="text-gray-600 mb-2">
+            Enviamos um link de confirmação para
           </p>
-          <p className="text-sm text-gray-500 mb-8">
-            Clique no link do email para ativar sua conta e começar a usar o Pronto.
+          <p className="text-emerald-600 font-semibold text-lg mb-6">
+            {email}
           </p>
+
+          <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <svg 
+                className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
+                />
+              </svg>
+              <div className="text-left">
+                <p className="text-amber-800 font-semibold text-sm mb-1">
+                  ⚠️ Importante: Verifique sua caixa de spam!
+                </p>
+                <p className="text-amber-700 text-xs leading-relaxed">
+                  O email virá com o nome <strong>"Supabase Auth"</strong>.<br />
+                  Se não aparecer na caixa de entrada, verifique nas pastas:<br />
+                  📁 <strong>Spam</strong>, <strong>Lixo Eletrônico</strong> ou <strong>Promoções</strong>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-left">
+            <p className="text-blue-900 font-medium text-sm mb-2">
+              📝 Como funciona:
+            </p>
+            <ol className="text-blue-700 text-xs space-y-1 list-decimal list-inside">
+              <li>Abra o email de <strong>Supabase Auth</strong></li>
+              <li>Clique no link de confirmação</li>
+              <li>Sua conta será ativada automaticamente</li>
+              <li>Faça login e comece a usar!</li>
+            </ol>
+          </div>
 
           <Link
             href="/login"
-            className="block w-full py-3.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition shadow-lg shadow-emerald-600/30"
+            className="block w-full py-3.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition shadow-lg shadow-emerald-600/30 mb-4"
           >
             Voltar para o login
           </Link>
 
-          <p className="text-xs text-gray-400 mt-6">
-            Não recebeu o email? Verifique sua caixa de spam ou lixeira.
+          <p className="text-xs text-gray-400">
+            Não recebeu o email após 5 minutos?{" "}
+            <button className="text-emerald-600 hover:underline font-medium">
+              Reenviar email
+            </button>
           </p>
         </div>
       </div>
