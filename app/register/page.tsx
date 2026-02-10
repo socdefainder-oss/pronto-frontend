@@ -12,6 +12,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
 
@@ -38,12 +39,18 @@ export default function RegisterPage() {
       return;
     }
 
+    if (password.length < 6) {
+      setError("A senha deve ter pelo menos 6 caracteres");
+      setLoading(false);
+      return;
+    }
+
     try {
       // Timeout de 30 segundos
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-      const res = await fetch(`${API_URL}/api/auth/register`, {
+      const res = await fetch(`${API_URL}/api/auth/register-with-email`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
@@ -58,10 +65,16 @@ export default function RegisterPage() {
       }
 
       const data = await res.json();
-      localStorage.setItem("pronto_token", data.token);
-      localStorage.setItem("pronto_user", JSON.stringify(data.user));
-
-      router.push("/app");
+      
+      // Se o registro foi com email verification, mostra mensagem de sucesso
+      if (data.needsEmailVerification || data.message?.includes('Verifique')) {
+        setSuccess(true);
+      } else {
+        // Compatibilidade com registro antigo (sem verification)
+        localStorage.setItem("pronto_token", data.token);
+        localStorage.setItem("pronto_user", JSON.stringify(data.user));
+        router.push("/app");
+      }
     } catch (err: any) {
       if (err.name === 'AbortError') {
         setError("Tempo de conexão esgotado. O servidor pode estar iniciando, tente novamente em alguns segundos.");
@@ -71,6 +84,53 @@ export default function RegisterPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  // Tela de sucesso após registro
+  if (success) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-6">
+        <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 text-center relative">
+          <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg
+              className="w-10 h-10 text-emerald-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76"
+              />
+            </svg>
+          </div>
+
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">
+            Verifique seu email!
+          </h2>
+          <p className="text-gray-600 mb-4">
+            Enviamos um link de confirmação para{" "}
+            <strong className="text-emerald-600">{email}</strong>
+          </p>
+          <p className="text-sm text-gray-500 mb-8">
+            Clique no link do email para ativar sua conta e começar a usar o Pronto.
+          </p>
+
+          <Link
+            href="/login"
+            className="block w-full py-3.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition shadow-lg shadow-emerald-600/30"
+          >
+            Voltar para o login
+          </Link>
+
+          <p className="text-xs text-gray-400 mt-6">
+            Não recebeu o email? Verifique sua caixa de spam ou lixeira.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
