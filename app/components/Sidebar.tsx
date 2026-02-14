@@ -95,6 +95,18 @@ export default function Sidebar() {
         </svg>
       ),
       href: `/app/restaurant/${restaurantId}/reports`,
+      hasDropdown: true,
+      subItems: [
+        { label: "Resumo geral", href: `/app/restaurant/${restaurantId}/reports?tab=resumo` },
+        { label: "Vendas", href: `/app/restaurant/${restaurantId}/reports?tab=vendas` },
+        { label: "Atendimento", href: `/app/restaurant/${restaurantId}/reports?tab=atendimento` },
+        { label: "Clientes", href: `/app/restaurant/${restaurantId}/reports?tab=clientes` },
+        { label: "Cardápio", href: `/app/restaurant/${restaurantId}/reports?tab=cardapio` },
+        { label: "Histórico de pedidos", href: `/app/restaurant/${restaurantId}/reports?tab=historico` },
+        { label: "Produtos", href: `/app/restaurant/${restaurantId}/reports?tab=produtos` },
+        { label: "Feedbacks", href: `/app/restaurant/${restaurantId}/reports?tab=feedbacks` },
+        { label: "Nível de qualidade", href: `/app/restaurant/${restaurantId}/reports?tab=qualidade` },
+      ],
     },
     {
       label: "Gestor de Pedidos",
