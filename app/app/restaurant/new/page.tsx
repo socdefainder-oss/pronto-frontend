@@ -135,7 +135,7 @@ export default function NewRestaurantPage() {
 
       setOkMsg("âœ… Restaurante criado com sucesso!");
       
-      // Redireciona para a página de gerenciamento do restaurante
+      // Redireciona para a pï¿½gina de gerenciamento do restaurante
       if (data?.restaurant?.id) {
         setTimeout(() => {
           router.push(`/app/restaurant/${data.restaurant.id}`);
