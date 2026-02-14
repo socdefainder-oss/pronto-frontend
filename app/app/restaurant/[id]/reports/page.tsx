@@ -511,8 +511,152 @@ export default function ReportsPage({ params }: { params: { id: string } }) {
           </>
         )}
 
+        {/* Tab Vendas */}
+        {activeTab === "vendas" && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-200 p-6">
+              <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <input type="date" className="border-2 border-gray-200 rounded-lg px-4 py-2 text-sm font-medium" defaultValue={new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]} />
+                  <span className="text-gray-500 font-medium">-</span>
+                  <input type="date" className="border-2 border-gray-200 rounded-lg px-4 py-2 text-sm font-medium" defaultValue={new Date().toISOString().split('T')[0]} />
+                </div>
+              </div>
+              <div className="border-t-2 border-gray-200 pt-6">
+                <p className="text-sm text-gray-600 mb-2">Total em vendas</p>
+                <p className="text-5xl font-bold text-emerald-600">R$ {formatPrice(stats?.totalRevenue || 0)}</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200 p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-sm text-gray-600">Faturamento bruto</span>
+                </div>
+                <div className="text-2xl font-bold text-gray-900">R$ {formatPrice(stats?.totalRevenue || 0)}</div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200 p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span className="text-sm text-gray-600">Total de Pedidos</span>
+                </div>
+                <div className="text-2xl font-bold text-gray-900">{stats?.totalOrders || 0}</div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200 p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <span className="text-sm text-gray-600">Ticket Médio</span>
+                </div>
+                <div className="text-2xl font-bold text-gray-900">R$ {formatPrice(stats?.averageTicket || 0)}</div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200 p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                  </svg>
+                  <span className="text-sm text-gray-600">Pedidos com cupom</span>
+                </div>
+                <div className="text-2xl font-bold text-gray-900">0</div>
+              </div>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200 p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Desempenho - Faturamento, Pedidos e Clientes</h3>
+                <div className="h-64">
+                  {salesByDay && salesByDay.length > 0 ? (
+                    <div className="h-full flex items-end justify-between gap-1">
+                      {salesByDay.map((day, index) => {
+                        const maxRevenue = Math.max(...salesByDay.map(d => d.revenue));
+                        const height = maxRevenue > 0 ? (day.revenue / maxRevenue) * 100 : 0;
+                        return (
+                          <div key={index} className="flex-1 flex flex-col items-center">
+                            <div className="w-full bg-emerald-500 rounded-t hover:bg-emerald-600 transition cursor-pointer" style={{ height: `${height}%` }} title={`${formatDateShort(day.date)}: R$ ${formatPrice(day.revenue)}`}></div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-gray-400">Nenhum dado disponível</div>
+                  )}
+                </div>
+                <div className="flex items-center justify-center gap-6 mt-4 text-sm">
+                  <div className="flex items-center gap-2"><div className="w-3 h-3 bg-emerald-500 rounded-full"></div><span className="text-gray-700">Faturamento</span></div>
+                  <div className="flex items-center gap-2"><div className="w-3 h-3 bg-blue-500 rounded-full"></div><span className="text-gray-700">Pedidos</span></div>
+                  <div className="flex items-center gap-2"><div className="w-3 h-3 bg-orange-500 rounded-full"></div><span className="text-gray-700">Clientes</span></div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200 p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Distribuição por Plataforma</h3>
+                <div className="h-64 flex items-center justify-center">
+                  <div className="relative">
+                    <svg className="w-48 h-48" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="40" fill="none" stroke="#3b82f6" strokeWidth="20" strokeDasharray="251.2 0" transform="rotate(-90 50 50)" />
+                      <text x="50" y="50" textAnchor="middle" dy=".3em" className="text-sm font-bold fill-gray-700">Menu: 100%</text>
+                    </svg>
+                  </div>
+                </div>
+                <div className="flex items-center justify-center gap-2 mt-4 text-sm">
+                  <div className="flex items-center gap-2"><div className="w-3 h-3 bg-blue-500 rounded-full"></div><span className="text-gray-700">Menu</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200 p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                </svg>
+                Investimento em cupons
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b-2 border-gray-200">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contagem</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor investido (R$)</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor patrocinado (R$)</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket médio (R$)</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor total faturado (R$)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    <tr className="hover:bg-gray-50 transition">
+                      <td className="px-4 py-4 text-sm font-medium text-gray-900">Pedidos sem cupom</td>
+                      <td className="px-4 py-4 text-sm text-gray-700">{stats?.totalOrders || 0}</td>
+                      <td className="px-4 py-4 text-sm text-gray-700">R$ 0,00</td>
+                      <td className="px-4 py-4 text-sm text-gray-700">R$ 0,00</td>
+                      <td className="px-4 py-4 text-sm text-gray-700">R$ {formatPrice(stats?.averageTicket || 0)}</td>
+                      <td className="px-4 py-4 text-sm font-semibold text-gray-900">R$ {formatPrice(stats?.totalRevenue || 0)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
+                <span>Registros por página: 5</span>
+                <span>1-1 de 1</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Outras Tabs - Em desenvolvimento */}
-        {activeTab !== "resumo" && (
+        {activeTab !== "resumo" && activeTab !== "vendas" && (
           <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-200 p-12">
             <div className="text-center">
               <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
