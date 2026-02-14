@@ -34,6 +34,7 @@ function getToken() {
 }
 
 export default function NewRestaurantPage() {
+  const router = useRouter();
   const API = useMemo(() => getApiBase(), []);
 
   const [name, setName] = useState("");
@@ -133,12 +134,13 @@ export default function NewRestaurantPage() {
       }
 
       setOkMsg("âœ… Restaurante criado com sucesso!");
-      // limpa form e reseta slug auto
-      setName("");
-      setSlug("");
-      setSlugTouched(false);
-      setPhone("");
-      setDescription("");
+      
+      // Redireciona para a página de gerenciamento do restaurante
+      if (data?.restaurant?.id) {
+        setTimeout(() => {
+          router.push(`/app/restaurant/${data.restaurant.id}`);
+        }, 1000);
+      }
       setAddress("");
     } catch (err: any) {
       setFormError("Falha de rede ao chamar a API. Verifique o backend/ENV.");
