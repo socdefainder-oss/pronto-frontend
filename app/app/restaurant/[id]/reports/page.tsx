@@ -526,4 +526,4 @@ export default function ReportsPage({ params }: { params: { id: string } }) {
       </div>
     </div>
   );
-}
+}

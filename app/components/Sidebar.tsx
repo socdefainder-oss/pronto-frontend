@@ -9,9 +9,7 @@ export default function Sidebar() {
   const params = useParams();
   const pathname = usePathname();
   const restaurantId = params?.id as string;
-  const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>({
-    "Administrar Loja": true,
-  });
+  const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>({});
   const [restaurantName, setRestaurantName] = useState<string>("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [restaurants, setRestaurants] = useState<Array<{ id: string; name: string }>>([]);
