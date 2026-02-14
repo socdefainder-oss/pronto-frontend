@@ -230,7 +230,7 @@ export default function RestaurantSettingsPage() {
     setSuccess("");
 
     try {
-      const res = await fetch(`${API_URL}/api/restaurants/${id}`, {
+      const res = await fetch(`${API_URL}/api/restaurants/${restaurantId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
