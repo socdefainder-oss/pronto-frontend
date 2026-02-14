@@ -303,8 +303,9 @@ export default function Sidebar() {
                     </p>
                   )}
                 </div>
+              </div>
 
-              {/* Botão Acessar Cardápio */}
+              {/* Quadrante Acessar Cardápio */}
               {restaurantSlug && (
                 <a
                   href={`/r/${restaurantSlug}`}
