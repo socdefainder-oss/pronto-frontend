@@ -66,6 +66,18 @@ export default function RestaurantSettingsPage() {
     sunday: [{ start: "17:30", end: "23:30" }],
   });
 
+  // Estados para Usuários
+  const [users, setUsers] = useState<any[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [userForm, setUserForm] = useState({
+    nome: "",
+    email: "",
+    whatsapp: "",
+    cpf: "",
+    role: "operador" as "operador" | "gerente" | "dono",
+  });
+
   useEffect(() => {
     if (!restaurantId) return;
     loadRestaurant();
@@ -203,6 +215,109 @@ export default function RestaurantSettingsPage() {
       setSaving(false);
     }
   }
+
+  // Funções para gerenciar usuários
+  async function loadUsers() {
+    const token = getToken();
+    if (!token) return;
+
+    setLoadingUsers(true);
+    try {
+      const res = await fetch(`${API_URL}/api/restaurants/${restaurantId}/users`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error("Erro ao carregar usuários");
+
+      const data = await res.json();
+      setUsers(data);
+    } catch (err: any) {
+      console.error("Erro ao carregar usuários:", err);
+    } finally {
+      setLoadingUsers(false);
+    }
+  }
+
+  useEffect(() => {
+    if (activeSection === 'usuarios') {
+      loadUsers();
+    }
+  }, [activeSection]);
+
+  async function handleCreateUser(e: React.FormEvent) {
+    e.preventDefault();
+    const token = getToken();
+    if (!token) return;
+
+    setSaving(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const res = await fetch(`${API_URL}/api/restaurants/${restaurantId}/users`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(userForm),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Erro ao criar usuário");
+      }
+
+      setSuccess("Usuário criado com sucesso!");
+      setShowUserModal(false);
+      setUserForm({
+        nome: "",
+        email: "",
+        whatsapp: "",
+        cpf: "",
+        role: "operador",
+      });
+      loadUsers();
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err: any) {
+      setError(err.message || "Erro ao criar usuário");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeleteUser(userId: string, isOwner: boolean) {
+    if (isOwner) {
+      alert("Não é possível remover o dono do restaurante");
+      return;
+    }
+
+    if (!confirm("Tem certeza que deseja remover este usuário?")) return;
+
+    const token = getToken();
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${API_URL}/api/restaurants/${restaurantId}/users/${userId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error("Erro ao remover usuário");
+
+      setSuccess("Usuário removido com sucesso!");
+      loadUsers();
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err: any) {
+      setError(err.message || "Erro ao remover usuário");
+    }
+  }
+
+  const roleDescriptions = {
+    operador: "Sem permissão ao financeiro e Relatórios",
+    gerente: "Sem permissão a configurações de repasse",
+    dono: "Permissão total",
+  };
 
   if (loading) {
     return (
@@ -847,7 +962,7 @@ export default function RestaurantSettingsPage() {
                 )}
 
                 {/* Placeholder para outras seções */}
-                {activeSection !== 'dados' && activeSection !== 'horarios' && (
+                {activeSection !== 'dados' && activeSection !== 'horarios' && activeSection !== 'usuarios' && (
                   <div className="text-center py-12">
                     <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-6">
                       <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -865,9 +980,274 @@ export default function RestaurantSettingsPage() {
                     </div>
                   </div>
                 )}
+
+                {/* Seção de Usuários */}
+                {activeSection === 'usuarios' && (
+                  <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-200 overflow-hidden">
+                    <div className="p-8 border-b-2 border-gray-100">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h2 className="text-2xl font-bold text-gray-900">Gerenciar Usuários</h2>
+                          <p className="text-gray-600 mt-1">Adicione usuários com diferentes níveis de permissão</p>
+                        </div>
+                        <button
+                          onClick={() => setShowUserModal(true)}
+                          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition shadow-lg shadow-blue-600/30"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          Criar Novo Usuário
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="p-8">
+                      {loadingUsers ? (
+                        <div className="text-center py-12">
+                          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                          <p className="mt-4 text-gray-600">Carregando usuários...</p>
+                        </div>
+                      ) : users.length === 0 ? (
+                        <div className="text-center py-12">
+                          <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                          </svg>
+                          <h3 className="text-xl font-bold text-gray-900 mb-2">Nenhum usuário adicional</h3>
+                          <p className="text-gray-600">Clique em "Criar Novo Usuário" para adicionar um usuário</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {users.map((user) => (
+                            <div
+                              key={user.id}
+                              className="flex items-center justify-between p-6 bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-xl border-2 border-gray-200 hover:border-blue-300 transition"
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+                                    <span className="text-white font-bold text-lg">
+                                      {user.name?.charAt(0).toUpperCase() || 'U'}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <h3 className="text-lg font-bold text-gray-900">{user.name}</h3>
+                                    <p className="text-sm text-gray-600">{user.email}</p>
+                                  </div>
+                                  {user.isOwner && (
+                                    <span className="ml-2 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-full shadow-lg">
+                                      PROPRIETÁRIO
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-4 mt-3">
+                                  {user.phone && (
+                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                      </svg>
+                                      {user.phone}
+                                    </div>
+                                  )}
+                                  {user.cpf && (
+                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                                      </svg>
+                                      CPF: {user.cpf}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-4">
+                                <div className="text-right">
+                                  <div
+                                    className={`inline-block px-4 py-2 rounded-lg font-bold text-sm ${
+                                      user.role === 'dono'
+                                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                                        : user.role === 'gerente'
+                                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white'
+                                        : 'bg-gradient-to-r from-green-500 to-teal-500 text-white'
+                                    }`}
+                                  >
+                                    {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                                  </div>
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {roleDescriptions[user.role as keyof typeof roleDescriptions]}
+                                  </p>
+                                </div>
+
+                                {!user.isOwner && (
+                                  <button
+                                    onClick={() => handleDeleteUser(user.id, user.isOwner)}
+                                    className="p-3 text-red-600 hover:bg-red-50 rounded-lg transition"
+                                    title="Remover usuário"
+                                  >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
       </main>
+
+      {/* Modal de Criar Usuário */}
+      {showUserModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-8 border-b-2 border-gray-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">Criar Novo Usuário</h2>
+                </div>
+                <button
+                  onClick={() => setShowUserModal(false)}
+                  className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleCreateUser} className="p-8 space-y-6">
+              <div>
+                <label className="block text-sm font-bold text-gray-900 mb-2">
+                  Nome <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={userForm.nome}
+                  onChange={(e) => setUserForm({ ...userForm, nome: e.target.value })}
+                  required
+                  className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition"
+                  placeholder="Nome completo do usuário"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-900 mb-2">
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={userForm.email}
+                  onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                  required
+                  className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition"
+                  placeholder="email@exemplo.com"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-2">
+                    WhatsApp
+                  </label>
+                  <input
+                    type="tel"
+                    value={userForm.whatsapp}
+                    onChange={(e) => setUserForm({ ...userForm, whatsapp: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition"
+                    placeholder="(00) 00000-0000"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-2">
+                    CPF
+                  </label>
+                  <input
+                    type="text"
+                    value={userForm.cpf}
+                    onChange={(e) => setUserForm({ ...userForm, cpf: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition"
+                    placeholder="000.000.000-00"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-900 mb-3">
+                  Cargo <span className="text-red-500">*</span>
+                </label>
+                <div className="space-y-3">
+                  {(['operador', 'gerente', 'dono'] as const).map((role) => (
+                    <label
+                      key={role}
+                      className={`flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition ${
+                        userForm.role === role
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:border-blue-300 bg-gray-50'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="role"
+                        value={role}
+                        checked={userForm.role === role}
+                        onChange={(e) => setUserForm({ ...userForm, role: e.target.value as any })}
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <div className="font-bold text-gray-900 mb-1">
+                          {role.charAt(0).toUpperCase() + role.slice(1)}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {roleDescriptions[role]}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {error && (
+                <div className="p-4 bg-red-50 border-2 border-red-200 rounded-xl flex items-start gap-3">
+                  <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="text-red-800 text-sm">{error}</p>
+                </div>
+              )}
+
+              <div className="flex items-center gap-4 pt-6 border-t-2 border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setShowUserModal(false)}
+                  className="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition shadow-lg shadow-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {saving ? "Criando..." : "Criar Usuário"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
 
       <style jsx>{`
         @keyframes blob {
