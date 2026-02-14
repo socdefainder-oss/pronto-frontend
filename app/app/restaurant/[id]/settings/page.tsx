@@ -202,6 +202,7 @@ export default function RestaurantSettingsPage() {
           isMEI,
           cnpjValid,
           cnpjAnalyzedAt,
+          schedules,
         }),
       });
 
