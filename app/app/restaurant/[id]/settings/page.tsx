@@ -217,6 +217,42 @@ export default function RestaurantSettingsPage() {
     }
   }
 
+  // Salvar horários
+  async function handleSaveSchedules() {
+    const token = getToken();
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const res = await fetch(`${API_URL}/api/restaurants/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ schedules }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Erro ao salvar horários");
+      }
+
+      setSuccess("Horários salvos com sucesso!");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   // Funções para gerenciar usuários
   async function loadUsers() {
     const token = getToken();
@@ -841,9 +877,11 @@ export default function RestaurantSettingsPage() {
                         </button>
                         <button
                           type="button"
-                          className="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700"
+                          onClick={handleSaveSchedules}
+                          disabled={saving}
+                          className="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          Salvar
+                          {saving ? "Salvando..." : "Salvar"}
                         </button>
                       </div>
                     </div>
