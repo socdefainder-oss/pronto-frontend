@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
 import { isValidSlug, slugify } from "../../../lib/slug";
 
@@ -282,3 +283,4 @@ export default function NewRestaurantPage() {
     </main>
   );
 }
+
