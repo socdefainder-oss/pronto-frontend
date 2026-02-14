@@ -16,6 +16,8 @@ export default function Sidebar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [restaurants, setRestaurants] = useState<Array<{ id: string; name: string }>>([]);
   const [showRestaurantDropdown, setShowRestaurantDropdown] = useState(false);
+  const [isOpen, setIsOpen] = useState<boolean>(true);
+  const [statusMessage, setStatusMessage] = useState<string>("");
 
   useEffect(() => {
     if (restaurantId) {
@@ -56,6 +58,8 @@ export default function Sidebar() {
       if (res.ok) {
         const data = await res.json();
         setRestaurantName(data.name || "");
+        setIsOpen(data.isOpen ?? true);
+        setStatusMessage(data.statusMessage || "");
       }
     } catch (err) {
       console.error("Erro ao carregar nome do restaurante:", err);
@@ -276,6 +280,25 @@ export default function Sidebar() {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
+
+              {/* Status da loja */}
+              <div className={`mt-2 px-3 py-2 rounded-lg flex items-center gap-2 ${
+                isOpen 
+                  ? 'bg-green-50 border border-green-200' 
+                  : 'bg-red-50 border border-red-200'
+              }`}>
+                <div className={`w-2 h-2 rounded-full ${isOpen ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
+                <div className="flex-1">
+                  <p className={`text-xs font-bold ${isOpen ? 'text-green-700' : 'text-red-700'}`}>
+                    {isOpen ? 'ABERTO' : 'FECHADO'}
+                  </p>
+                  {statusMessage && (
+                    <p className={`text-xs ${isOpen ? 'text-green-600' : 'text-red-600'}`}>
+                      {statusMessage}
+                    </p>
+                  )}
+                </div>
+              </div>
                 </div>
               </button>
               
