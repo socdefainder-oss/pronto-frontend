@@ -324,7 +324,6 @@ export default function Sidebar() {
                   </div>
                 </a>
               )}
-              </div>
               
               {/* Dropdown */}
               {showRestaurantDropdown && restaurants.length > 1 && (
