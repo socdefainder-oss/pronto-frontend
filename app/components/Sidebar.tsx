@@ -18,6 +18,7 @@ export default function Sidebar() {
   const [showRestaurantDropdown, setShowRestaurantDropdown] = useState(false);
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const [statusMessage, setStatusMessage] = useState<string>("");
+  const [restaurantSlug, setRestaurantSlug] = useState<string>("");
 
   useEffect(() => {
     if (restaurantId) {
@@ -59,6 +60,7 @@ export default function Sidebar() {
         const data = await res.json();
         setRestaurantName(data.name || "");
         setIsOpen(data.isOpen ?? true);
+        setRestaurantSlug(data.slug || "");
         setStatusMessage(data.statusMessage || "");
       }
     } catch (err) {
@@ -301,6 +303,26 @@ export default function Sidebar() {
                     </p>
                   )}
                 </div>
+
+              {/* Botão Acessar Cardápio */}
+              {restaurantSlug && (
+                <a
+                  href={`/r/${restaurantSlug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg hover:border-blue-300 hover:from-blue-100 hover:to-indigo-100 transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-2 text-blue-700 font-semibold text-sm">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    Acessar Cardápio
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </div>
+                </a>
+              )}
               </div>
               
               {/* Dropdown */}
