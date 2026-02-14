@@ -262,7 +262,8 @@ export default function Sidebar() {
             <span className="text-xl font-bold text-gray-900">pronto</span>
           </Link>
           {restaurantName && (
-            <div className="relative mt-2">
+            <div className="relative mt-2 space-y-2">
+              {/* Quadrante do nome do restaurante */}
               <button
                 onClick={() => setShowRestaurantDropdown(!showRestaurantDropdown)}
                 className="w-full px-3 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg hover:border-emerald-300 transition-colors group"
@@ -280,9 +281,11 @@ export default function Sidebar() {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
+                </div>
+              </button>
 
-              {/* Status da loja */}
-              <div className={`mt-2 px-3 py-2 rounded-lg flex items-center gap-2 ${
+              {/* Quadrante do status da loja */}
+              <div className={`px-3 py-2 rounded-lg flex items-center gap-2 ${
                 isOpen 
                   ? 'bg-green-50 border border-green-200' 
                   : 'bg-red-50 border border-red-200'
