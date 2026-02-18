@@ -24,7 +24,7 @@ export default function AppHome() {
   // User Management State
   const [showUserManagement, setShowUserManagement] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [selectedRole, setSelectedRole] = useState<"owner" | "manager" | "operator">("operator");
+  const [selectedRole, setSelectedRole] = useState<"dono" | "gerente" | "operador">("operador");
   const [selectedRestaurants, setSelectedRestaurants] = useState<string[]>([]);
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteSuccess, setInviteSuccess] = useState("");
@@ -87,7 +87,7 @@ export default function AppHome() {
     setInviteLoading(true);
 
     try {
-      await api("/api/users/invite", {
+      await api("/api/restaurants/invite", {
         method: "POST",
         body: JSON.stringify({
           email: inviteEmail.trim().toLowerCase(),
@@ -101,7 +101,7 @@ export default function AppHome() {
       // Limpar form
       setTimeout(() => {
         setInviteEmail("");
-        setSelectedRole("operator");
+        setSelectedRole("operador");
         setSelectedRestaurants([]);
         setInviteSuccess("");
         setShowUserManagement(false);
@@ -446,9 +446,9 @@ export default function AppHome() {
                     <div className="grid grid-cols-3 gap-3">
                       <button
                         type="button"
-                        onClick={() => setSelectedRole("operator")}
+                        onClick={() => setSelectedRole("operador")}
                         className={`p-4 rounded-xl border-2 transition ${
-                          selectedRole === "operator"
+                          selectedRole === "operador"
                             ? "border-blue-500 bg-blue-50 shadow-md"
                             : "border-gray-300 hover:border-gray-400"
                         }`}
@@ -462,9 +462,9 @@ export default function AppHome() {
 
                       <button
                         type="button"
-                        onClick={() => setSelectedRole("manager")}
+                        onClick={() => setSelectedRole("gerente")}
                         className={`p-4 rounded-xl border-2 transition ${
-                          selectedRole === "manager"
+                          selectedRole === "gerente"
                             ? "border-blue-500 bg-blue-50 shadow-md"
                             : "border-gray-300 hover:border-gray-400"
                         }`}
@@ -478,9 +478,9 @@ export default function AppHome() {
 
                       <button
                         type="button"
-                        onClick={() => setSelectedRole("owner")}
+                        onClick={() => setSelectedRole("dono")}
                         className={`p-4 rounded-xl border-2 transition ${
-                          selectedRole === "owner"
+                          selectedRole === "dono"
                             ? "border-blue-500 bg-blue-50 shadow-md"
                             : "border-gray-300 hover:border-gray-400"
                         }`}
