@@ -20,6 +20,15 @@ export default function AppHome() {
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("Usuário");
+  
+  // User Management State
+  const [showUserManagement, setShowUserManagement] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [selectedRole, setSelectedRole] = useState<"owner" | "manager" | "operator">("operator");
+  const [selectedRestaurants, setSelectedRestaurants] = useState<string[]>([]);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteSuccess, setInviteSuccess] = useState("");
+  const [inviteError, setInviteError] = useState("");
 
   async function load() {
     setErr(null);
@@ -54,6 +63,75 @@ export default function AppHome() {
     load();
   }, []);
 
+  // Função para convidar usuário
+  async function handleInviteUser() {
+    setInviteError("");
+    setInviteSuccess("");
+
+    // Validações
+    if (!inviteEmail.trim()) {
+      setInviteError("Email é obrigatório");
+      return;
+    }
+
+    if (!inviteEmail.includes("@")) {
+      setInviteError("Email inválido");
+      return;
+    }
+
+    if (selectedRestaurants.length === 0) {
+      setInviteError("Selecione pelo menos um restaurante");
+      return;
+    }
+
+    setInviteLoading(true);
+
+    try {
+      await api("/api/users/invite", {
+        method: "POST",
+        body: JSON.stringify({
+          email: inviteEmail.trim().toLowerCase(),
+          role: selectedRole,
+          restaurantIds: selectedRestaurants,
+        }),
+      });
+
+      setInviteSuccess(`✅ Convite enviado para ${inviteEmail}! O usuário receberá um email para se cadastrar.`);
+      
+      // Limpar form
+      setTimeout(() => {
+        setInviteEmail("");
+        setSelectedRole("operator");
+        setSelectedRestaurants([]);
+        setInviteSuccess("");
+        setShowUserManagement(false);
+      }, 3000);
+
+    } catch (error: any) {
+      setInviteError(error.message || "Erro ao enviar convite");
+    } finally {
+      setInviteLoading(false);
+    }
+  }
+
+  // Toggle restaurant selection
+  function toggleRestaurant(restaurantId: string) {
+    setSelectedRestaurants(prev =>
+      prev.includes(restaurantId)
+        ? prev.filter(id => id !== restaurantId)
+        : [...prev, restaurantId]
+    );
+  }
+
+  // Select all restaurants
+  function selectAllRestaurants() {
+    if (selectedRestaurants.length === restaurants.length) {
+      setSelectedRestaurants([]);
+    } else {
+      setSelectedRestaurants(restaurants.map(r => r.id));
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -70,6 +148,15 @@ export default function AppHome() {
               </div>
             </div>
             <div className="flex gap-3">
+              <button
+                onClick={() => setShowUserManagement(true)}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition shadow-lg"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Gerenciar Usuários
+              </button>
               <Link
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition shadow-lg"
                 href="/app/restaurant/new"
@@ -265,6 +352,246 @@ export default function AppHome() {
           </>
         )}
       </main>
+
+      {/* User Management Modal */}
+      {showUserManagement && (
+        <>
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 bg-black/60 z-50 animate-in fade-in"
+            onClick={() => setShowUserManagement(false)}
+          ></div>
+
+          {/* Modal */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in zoom-in">
+            <div
+              className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold">Gerenciar Usuários</h2>
+                      <p className="text-blue-100 text-sm">Convide colaboradores para seus restaurantes</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowUserManagement(false)}
+                    className="w-10 h-10 rounded-xl bg-white/20 hover:bg-white/30 transition flex items-center justify-center"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+                {/* Success Message */}
+                {inviteSuccess && (
+                  <div className="mb-6 rounded-xl border-l-4 border-green-500 bg-green-50 p-4 animate-in slide-in-from-top">
+                    <div className="flex items-center gap-3">
+                      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p className="text-green-800 font-medium">{inviteSuccess}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Error Message */}
+                {inviteError && (
+                  <div className="mb-6 rounded-xl border-l-4 border-red-500 bg-red-50 p-4 animate-in slide-in-from-top">
+                    <div className="flex items-center gap-3">
+                      <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p className="text-red-800 font-medium">{inviteError}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Form */}
+                <div className="space-y-6">
+                  {/* Email Input */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Email do Usuário *
+                    </label>
+                    <input
+                      type="email"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      placeholder="usuario@example.com"
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition"
+                    />
+                    <p className="mt-2 text-sm text-gray-600">
+                      O usuário receberá um email com instruções para acessar a plataforma
+                    </p>
+                  </div>
+
+                  {/* Role Selection */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-3">
+                      Nível de Acesso * 
+ </label>
+                    <div className="grid grid-cols-3 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRole("operator")}
+                        className={`p-4 rounded-xl border-2 transition ${
+                          selectedRole === "operator"
+                            ? "border-blue-500 bg-blue-50 shadow-md"
+                            : "border-gray-300 hover:border-gray-400"
+                        }`}
+                      >
+                        <div className="text-center">
+                          <div className="mb-2">👨‍💼</div>
+                          <div className="font-bold text-sm">Operador</div>
+                          <div className="text-xs text-gray-600 mt-1">Acesso básico</div>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRole("manager")}
+                        className={`p-4 rounded-xl border-2 transition ${
+                          selectedRole === "manager"
+                            ? "border-blue-500 bg-blue-50 shadow-md"
+                            : "border-gray-300 hover:border-gray-400"
+                        }`}
+                      >
+                        <div className="text-center">
+                          <div className="mb-2">👔</div>
+                          <div className="font-bold text-sm">Gerente</div>
+                          <div className="text-xs text-gray-600 mt-1">Gerenciar produtos</div>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRole("owner")}
+                        className={`p-4 rounded-xl border-2 transition ${
+                          selectedRole === "owner"
+                            ? "border-blue-500 bg-blue-50 shadow-md"
+                            : "border-gray-300 hover:border-gray-400"
+                        }`}
+                      >
+                        <div className="text-center">
+                          <div className="mb-2">👑</div>
+                          <div className="font-bold text-sm">Dono</div>
+                          <div className="text-xs text-gray-600 mt-1">Acesso total</div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Restaurant Selection */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <label className="block text-sm font-bold text-gray-700">
+                        Selecione os Restaurantes *
+                      </label>
+                      <button
+                        type="button"
+                        onClick={selectAllRestaurants}
+                        className="text-sm text-blue-600 hover:text-blue-700 font-semibold"
+                      >
+                        {selectedRestaurants.length === restaurants.length ? "Desmarcar todos" : "Selecionar todos"}
+                      </button>
+                    </div>
+
+                    <div className="border-2 border-gray-300 rounded-xl p-4 max-h-60 overflow-y-auto space-y-2">
+                      {restaurants.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">
+                          <svg className="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                          </svg>
+                          <p>Nenhum restaurante cadastrado</p>
+                        </div>
+                      ) : (
+                        restaurants.map((restaurant) => (
+                          <label
+                            key={restaurant.id}
+                            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedRestaurants.includes(restaurant.id)}
+                              onChange={() => toggleRestaurant(restaurant.id)}
+                              className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
+                            />
+                            <div className="flex items-center gap-3 flex-1">
+                              {restaurant.logoUrl ? (
+                                <img
+                                  src={restaurant.logoUrl}
+                                  alt={restaurant.name}
+                                  className="w-10 h-10 rounded-lg object-cover border border-gray-200"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+                                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                  </svg>
+                                </div>
+                              )}
+                              <div>
+                                <div className="font-semibold text-gray-900">{restaurant.name}</div>
+                                <div className="text-xs text-gray-500 font-mono">{restaurant.slug}</div>
+                              </div>
+                            </div>
+                          </label>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="border-t border-gray-200 p-6 bg-gray-50 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowUserManagement(false)}
+                  className="px-6 py-3 rounded-xl border-2 border-gray-300 font-semibold text-gray-700 hover:bg-gray-100 transition"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleInviteUser}
+                  disabled={inviteLoading}
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 font-bold text-white hover:from-blue-700 hover:to-blue-800 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {inviteLoading ? (
+                    <>
+                      <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      Enviar Convite
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
