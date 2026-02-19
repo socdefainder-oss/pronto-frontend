@@ -29,6 +29,7 @@ export default function AppHome() {
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteSuccess, setInviteSuccess] = useState("");
   const [inviteError, setInviteError] = useState("");
+  const [inviteLink, setInviteLink] = useState("");
 
   async function load() {
     setErr(null);
@@ -85,9 +86,10 @@ export default function AppHome() {
     }
 
     setInviteLoading(true);
+    setInviteLink("");
 
     try {
-      await api("/api/restaurants/invite", {
+      const response = await api("/api/restaurants/invite", {
         method: "POST",
         body: JSON.stringify({
           email: inviteEmail.trim().toLowerCase(),
@@ -96,16 +98,31 @@ export default function AppHome() {
         }),
       });
 
-      setInviteSuccess(`✅ Convite enviado para ${inviteEmail}! O usuário receberá um email para se cadastrar.`);
+      // Se for usuário existente
+      if (response.existingUser) {
+        setInviteSuccess(`✅ Acesso concedido para ${inviteEmail}! O usuário já tem uma conta.`);
+      } 
+      // Se for novo usuário (convite criado)
+      else if (response.invite) {
+        // Verifica se email foi enviado com sucesso ou falhou
+        const token = response.invite.token;
+        const frontendUrl = window.location.origin;
+        const link = `${frontendUrl}/auth/accept-invite/${token}`;
+        
+        setInviteLink(link);
+        setInviteSuccess(`✅ Convite criado! Email enviado para ${inviteEmail}.`);
+        setInviteError("");
+      }
       
-      // Limpar form
+      // Limpar form após 5 segundos (mais tempo para copiar link)
       setTimeout(() => {
         setInviteEmail("");
         setSelectedRole("operador");
         setSelectedRestaurants([]);
         setInviteSuccess("");
+        setInviteLink("");
         setShowUserManagement(false);
-      }, 3000);
+      }, 5000);
 
     } catch (error: any) {
       setInviteError(error.message || "Erro ao enviar convite");
@@ -403,6 +420,38 @@ export default function AppHome() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <p className="text-green-800 font-medium">{inviteSuccess}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Invite Link (for manual sharing) */}
+                {inviteLink && (
+                  <div className="mb-6 rounded-xl border-2 border-blue-300 bg-blue-50 p-5 animate-in slide-in-from-top">
+                    <div className="flex items-start gap-3 mb-3">
+                      <svg className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                      <div className="flex-1">
+                        <p className="text-blue-900 font-bold mb-1">📋 Link de Convite</p>
+                        <p className="text-blue-800 text-sm mb-3">
+                          Copie este link e envie manualmente para o usuário (WhatsApp, Telegram, etc.):
+                        </p>
+                        <div className="bg-white rounded-lg p-3 border border-blue-200 font-mono text-sm text-gray-700 break-all mb-3">
+                          {inviteLink}
+                        </div>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(inviteLink);
+                            alert("✅ Link copiado para a área de transferência!");
+                          }}
+                          className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold rounded-lg hover:from-blue-700 hover:to-blue-800 transition shadow-md flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                          Copiar Link
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
