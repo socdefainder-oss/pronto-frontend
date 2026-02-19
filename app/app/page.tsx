@@ -113,22 +113,26 @@ export default function AppHome() {
         setInviteSuccess(`✅ Convite criado! Email enviado para ${inviteEmail}.`);
         setInviteError("");
       }
-      
-      // Limpar form após 5 segundos (mais tempo para copiar link)
-      setTimeout(() => {
-        setInviteEmail("");
-        setSelectedRole("operador");
-        setSelectedRestaurants([]);
-        setInviteSuccess("");
-        setInviteLink("");
-        setShowUserManagement(false);
-      }, 5000);
 
     } catch (error: any) {
       setInviteError(error.message || "Erro ao enviar convite");
     } finally {
       setInviteLoading(false);
     }
+  }
+
+  // Função para fechar o modal e limpar tudo
+  function closeUserManagement() {
+    setShowUserManagement(false);
+    // Espera a animação de fechar antes de limpar
+    setTimeout(() => {
+      setInviteEmail("");
+      setSelectedRole("operador");
+      setSelectedRestaurants([]);
+      setInviteSuccess("");
+      setInviteError("");
+      setInviteLink("");
+    }, 300);
   }
 
   // Toggle restaurant selection
@@ -376,13 +380,13 @@ export default function AppHome() {
           {/* Overlay */}
           <div
             className="fixed inset-0 bg-black/60 z-50 animate-in fade-in"
-            onClick={() => setShowUserManagement(false)}
+            onClick={closeUserManagement}
           ></div>
 
           {/* Modal */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in zoom-in">
             <div
-              className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden"
+              className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[95vh] overflow-hidden flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
@@ -400,7 +404,7 @@ export default function AppHome() {
                     </div>
                   </div>
                   <button
-                    onClick={() => setShowUserManagement(false)}
+                    onClick={closeUserManagement}
                     className="w-10 h-10 rounded-xl bg-white/20 hover:bg-white/30 transition flex items-center justify-center"
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -411,7 +415,7 @@ export default function AppHome() {
               </div>
 
               {/* Modal Body */}
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+              <div className="p-6 overflow-y-auto flex-1">
                 {/* Success Message */}
                 {inviteSuccess && (
                   <div className="mb-6 rounded-xl border-l-4 border-green-500 bg-green-50 p-4 animate-in slide-in-from-top">
@@ -609,7 +613,7 @@ export default function AppHome() {
               <div className="border-t border-gray-200 p-6 bg-gray-50 flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setShowUserManagement(false)}
+                  onClick={closeUserManagement}
                   className="px-6 py-3 rounded-xl border-2 border-gray-300 font-semibold text-gray-700 hover:bg-gray-100 transition"
                 >
                   Cancelar
