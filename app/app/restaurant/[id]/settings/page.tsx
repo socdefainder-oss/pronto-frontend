@@ -305,7 +305,14 @@ export default function RestaurantSettingsPage() {
         throw new Error(errorData.message || "Erro ao criar usuário");
       }
 
-      setSuccess("Usuário criado com sucesso!");
+      const data = await res.json();
+      
+      if (data.emailSent) {
+        setSuccess(`✅ Usuário criado! Um email com a senha foi enviado para ${userForm.email}`);
+      } else {
+        setSuccess("Usuário criado com sucesso!");
+      }
+      
       setShowUserModal(false);
       setUserForm({
         nome: "",
@@ -315,7 +322,7 @@ export default function RestaurantSettingsPage() {
         role: "operador",
       });
       loadUsers();
-      setTimeout(() => setSuccess(""), 3000);
+      setTimeout(() => setSuccess(""), 5000);
     } catch (err: any) {
       setError(err.message || "Erro ao criar usuário");
     } finally {
