@@ -183,6 +183,13 @@ export default function Sidebar() {
         </svg>
       ),
       href: `/app/restaurant/${restaurantId}/financeiro`,
+      hasDropdown: true,
+      subItems: [
+        { label: "Mensalidade", href: `/app/restaurant/${restaurantId}/financeiro/mensalidade` },
+        { label: "Extrato", href: `/app/restaurant/${restaurantId}/financeiro/extrato` },
+        { label: "Relatório", href: `/app/restaurant/${restaurantId}/financeiro/relatorio` },
+        { label: "Configurações", href: `/app/restaurant/${restaurantId}/financeiro/configuracoes` },
+      ],
     },
     {
       label: "Delivery",
