@@ -46,6 +46,9 @@ export default function ProductsPage() {
   const [categoryId, setCategoryId] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [imageUrl, setImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   // Category form states
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -126,6 +129,8 @@ export default function ProductsPage() {
     setCategoryId(product.categoryId || "");
     setIsActive(product.isActive);
     setImageUrl(product.imageUrl || "");
+    setImageFile(null);
+    setImagePreview(product.imageUrl || "");
     setShowProductForm(true);
   }
 
@@ -142,6 +147,64 @@ export default function ProductsPage() {
     setCategoryId("");
     setIsActive(true);
     setImageUrl("");
+    setImageFile(null);
+    setImagePreview("");
+  }
+
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("Arquivo deve ser uma imagem");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Imagem muito grande. Máximo: 5MB");
+      return;
+    }
+
+    setImageFile(file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  async function uploadImage(file: File, token: string): Promise<string> {
+    setUploading(true);
+
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error("Erro ao ler arquivo"));
+        reader.readAsDataURL(file);
+      });
+
+      const response = await fetch(`${API_URL}/api/upload/image`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          image: base64,
+          fileName: file.name,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Erro no upload da imagem");
+      }
+
+      const data = await response.json();
+      return data.url;
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function handleSubmitProduct(e: React.FormEvent) {
@@ -164,20 +227,25 @@ export default function ProductsPage() {
       return;
     }
 
-    const productData = {
-      restaurantId,
-      name: name.trim(),
-      description: description.trim() || null,
-      priceCents,
-      categoryId: categoryId || null,
-      isActive,
-      imageUrl: imageUrl.trim() || null,
-    };
-
     setError("");
     setSuccess("");
 
     try {
+      let finalImageUrl = imageUrl.trim();
+      if (imageFile) {
+        finalImageUrl = await uploadImage(imageFile, token);
+      }
+
+      const productData = {
+        restaurantId,
+        name: name.trim(),
+        description: description.trim() || null,
+        priceCents,
+        categoryId: categoryId || null,
+        isActive,
+        imageUrl: finalImageUrl || null,
+      };
+
       if (editingProduct) {
         const res = await fetch(`${API_URL}/api/catalog/products/${editingProduct.id}`, {
           method: "PATCH",
@@ -693,15 +761,43 @@ export default function ProductsPage() {
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        URL da imagem
+                        Imagem do produto (PNG, JPG, WEBP - max 5MB)
                       </label>
-                      <input
-                        type="url"
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition"
-                        placeholder="https://..."
-                      />
+
+                      {imagePreview && (
+                        <div className="mb-3 relative w-32 h-32 rounded-xl overflow-hidden border-2 border-gray-200">
+                          <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setImagePreview("");
+                              setImageFile(null);
+                              setImageUrl("");
+                            }}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold hover:bg-red-600"
+                          >
+                            x
+                          </button>
+                        </div>
+                      )}
+
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-gray-50 hover:bg-emerald-50 hover:border-emerald-400 transition">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <svg className="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                          </svg>
+                          <p className="text-sm text-gray-500">
+                            {imageFile ? imageFile.name : "Clique para selecionar uma imagem"}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP ate 5MB</p>
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleImageChange}
+                        />
+                      </label>
                     </div>
 
                     <div className="md:col-span-2">
@@ -720,14 +816,16 @@ export default function ProductsPage() {
                   <div className="flex gap-3">
                     <button
                       type="submit"
-                      className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:from-emerald-700 hover:to-teal-700 transition shadow-lg shadow-emerald-600/30"
+                      disabled={uploading}
+                      className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:from-emerald-700 hover:to-teal-700 transition shadow-lg shadow-emerald-600/30 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {editingProduct ? "Atualizar Produto" : "Criar Produto"}
+                      {uploading ? "Enviando imagem..." : editingProduct ? "Atualizar Produto" : "Criar Produto"}
                     </button>
                     <button
                       type="button"
                       onClick={handleCancelProduct}
-                      className="px-6 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-semibold hover:border-gray-300 hover:bg-gray-50 transition"
+                      disabled={uploading}
+                      className="px-6 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-semibold hover:border-gray-300 hover:bg-gray-50 transition disabled:opacity-60"
                     >
                       Cancelar
                     </button>
