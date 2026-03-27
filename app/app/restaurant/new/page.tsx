@@ -138,7 +138,7 @@ export default function NewRestaurantPage() {
       // Redireciona para a p�gina de gerenciamento do restaurante
       if (data?.restaurant?.id) {
         setTimeout(() => {
-          router.push(`/app/restaurant/${data.restaurant.id}/products`);
+          router.push(`/app/restaurant/${data.restaurant.id}`);
         }, 1000);
       }
       setAddress("");
