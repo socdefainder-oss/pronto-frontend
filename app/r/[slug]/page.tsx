@@ -390,11 +390,13 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
                       className="rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition cursor-pointer transform hover:scale-[1.02] duration-200"
                       onClick={() => banner.linkUrl && window.open(banner.linkUrl, '_blank')}
                     >
-                      <img
-                        src={banner.imageUrl}
-                        alt={banner.title}
-                        className="w-full h-48 md:h-64 object-cover"
-                      />
+                      <div className="w-full h-48 md:h-64 bg-gray-100 flex items-center justify-center">
+                        <img
+                          src={banner.imageUrl}
+                          alt={banner.title}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
                       <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-4">
                         <h3 className="text-white font-bold text-xl">{banner.title}</h3>
                         {banner.description && (
@@ -474,11 +476,11 @@ function ProductCard({ product, onAdd }: { product: any; onAdd: () => void }) {
     <div className="border-2 border-gray-200 rounded-2xl overflow-hidden hover:shadow-xl hover:border-emerald-300 transition bg-white flex flex-col">
       {/* Imagem do produto */}
       {product.imageUrl && (
-        <div className="relative w-full h-48 bg-gray-100">
+        <div className="relative w-full bg-gray-100 flex items-center justify-center min-h-48">
           <img
             src={product.imageUrl}
             alt={product.name}
-            className="w-full h-full object-cover"
+            className="w-full h-auto object-contain"
             onError={(e) => {
               // Se a imagem falhar ao carregar, esconde o elemento
               e.currentTarget.style.display = 'none';
