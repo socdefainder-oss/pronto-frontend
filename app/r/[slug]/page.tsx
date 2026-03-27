@@ -8,7 +8,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.
 
 export default function PublicRestaurantPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
-  const { addToCart, cart, cartTotal, cartCount } = useCart();
+  const { addToCart, cartTotal, cartCount } = useCart();
   const [restaurant, setRestaurant] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,6 +16,8 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [showCategoryBar, setShowCategoryBar] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
 
   useEffect(() => {
     async function loadRestaurant() {
@@ -70,6 +72,25 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (!selectedProduct) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSelectedProduct(null);
+      }
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [selectedProduct]);
+
   // Função para scroll suave até categoria
   const scrollToCategory = (categoryId: string) => {
     const element = document.getElementById(`category-${categoryId}`);
@@ -98,6 +119,22 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
         behavior: 'smooth'
       });
     }
+  };
+
+  const openProductDetails = (product: any) => {
+    setSelectedProduct(product);
+    setSelectedQuantity(1);
+  };
+
+  const closeProductDetails = () => {
+    setSelectedProduct(null);
+    setSelectedQuantity(1);
+  };
+
+  const addSelectedProductToCart = () => {
+    if (!selectedProduct) return;
+    addToCart(selectedProduct, selectedQuantity);
+    closeProductDetails();
   };
 
   if (loading) {
@@ -416,7 +453,7 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
                     </h3>
                     <div className="grid gap-3 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {category.products.map((product: any) => (
-                        <ProductCard key={product.id} product={product} onAdd={() => addToCart(product)} />
+                        <ProductCard key={product.id} product={product} onOpen={() => openProductDetails(product)} />
                       ))}
                     </div>
                   </div>
@@ -430,7 +467,7 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
                   </h3>
                   <div className="grid gap-3 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {restaurant.productsWithoutCategory.map((product: any) => (
-                      <ProductCard key={product.id} product={product} onAdd={() => addToCart(product)} />
+                      <ProductCard key={product.id} product={product} onOpen={() => openProductDetails(product)} />
                     ))}
                   </div>
                 </div>
@@ -456,6 +493,79 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
         </Link>
       )}
 
+      {selectedProduct && (
+        <div className="fixed inset-0 z-[70] bg-white md:bg-black/60 md:flex md:items-center md:justify-center" role="dialog" aria-modal="true">
+          <div className="h-full w-full overflow-y-auto bg-white md:h-auto md:max-h-[92vh] md:max-w-2xl md:rounded-[2rem] md:shadow-2xl">
+            <div className="relative">
+              <button
+                onClick={closeProductDetails}
+                className="absolute left-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-lg transition hover:bg-white"
+                aria-label="Fechar produto"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              <div className="aspect-[4/3] w-full bg-gray-100 flex items-center justify-center overflow-hidden md:rounded-t-[2rem]">
+                {selectedProduct.imageUrl ? (
+                  <img
+                    src={selectedProduct.imageUrl}
+                    alt={selectedProduct.name}
+                    className="h-full w-full object-contain"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50">
+                    <svg className="h-16 w-16 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+
+              <div className="px-5 pb-32 pt-5 md:px-8 md:pb-36 md:pt-7">
+                <h2 className="text-3xl font-bold leading-tight text-gray-900 md:text-4xl">{selectedProduct.name}</h2>
+                {selectedProduct.description && (
+                  <p className="mt-4 text-lg leading-8 text-gray-600 md:text-xl">{selectedProduct.description}</p>
+                )}
+                <p className="mt-6 text-2xl font-semibold text-gray-700 md:text-3xl">
+                  A partir de <span className="font-bold text-gray-900">R$ {(selectedProduct.priceCents / 100).toFixed(2).replace('.', ',')}</span>
+                </p>
+              </div>
+            </div>
+
+            <div className="fixed inset-x-0 bottom-0 z-[80] border-t border-gray-200 bg-white px-5 py-4 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] md:absolute md:rounded-b-[2rem] md:px-8 md:py-5">
+              <div className="mx-auto flex max-w-2xl items-center gap-4">
+                <div className="flex items-center overflow-hidden rounded-2xl border border-emerald-200 bg-emerald-50">
+                  <button
+                    onClick={() => setSelectedQuantity((current) => Math.max(1, current - 1))}
+                    className="flex h-14 w-14 items-center justify-center text-3xl font-medium text-emerald-700 transition hover:bg-emerald-100"
+                    aria-label="Diminuir quantidade"
+                  >
+                    -
+                  </button>
+                  <span className="w-12 text-center text-xl font-bold text-emerald-800">{selectedQuantity}</span>
+                  <button
+                    onClick={() => setSelectedQuantity((current) => current + 1)}
+                    className="flex h-14 w-14 items-center justify-center text-3xl font-medium text-emerald-700 transition hover:bg-emerald-100"
+                    aria-label="Aumentar quantidade"
+                  >
+                    +
+                  </button>
+                </div>
+
+                <button
+                  onClick={addSelectedProductToCart}
+                  className="flex-1 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 text-lg font-bold text-white shadow-lg transition hover:from-emerald-700 hover:to-teal-700"
+                >
+                  Adicionar R$ {((selectedProduct.priceCents * selectedQuantity) / 100).toFixed(2).replace('.', ',')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style jsx global>{`
         .scrollbar-hide {
           -ms-overflow-style: none;
@@ -469,11 +579,15 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
   );
 }
 
-function ProductCard({ product, onAdd }: { product: any; onAdd: () => void }) {
+function ProductCard({ product, onOpen }: { product: any; onOpen: () => void }) {
   const priceInReais = (product.priceCents / 100).toFixed(2).replace('.', ',');
 
   return (
-    <div className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-xl hover:border-emerald-300 transition bg-white flex flex-row md:flex-col items-stretch p-3 md:p-0 gap-3 md:gap-0">
+    <button
+      type="button"
+      onClick={onOpen}
+      className="w-full text-left border border-gray-200 rounded-2xl overflow-hidden hover:shadow-xl hover:border-emerald-300 transition bg-white flex flex-row md:flex-col items-stretch p-3 md:p-0 gap-3 md:gap-0"
+    >
       {/* Imagem do produto */}
       {product.imageUrl && (
         <div className="relative w-28 h-28 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100 flex items-center justify-center md:w-full md:h-auto md:min-h-48 md:rounded-none">
@@ -497,25 +611,10 @@ function ProductCard({ product, onAdd }: { product: any; onAdd: () => void }) {
         {product.description && (
           <p className="text-gray-600 text-sm mb-3 md:mb-4 line-clamp-2 md:line-clamp-3">{product.description}</p>
         )}
-        <div className="text-2xl md:text-3xl font-bold text-emerald-600 mb-3 md:mb-4 mt-auto">
-          R$ {priceInReais}
+        <div className="text-lg md:text-3xl font-bold text-gray-700 mb-1 mt-auto">
+          A partir de <span className="text-emerald-600">R$ {priceInReais}</span>
         </div>
-        <button
-          onClick={onAdd}
-          className="md:hidden inline-flex items-center justify-center self-start px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold text-sm shadow-md"
-        >
-          Adicionar
-        </button>
       </div>
-      <button
-        onClick={onAdd}
-        className="hidden md:flex w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-3.5 rounded-xl transition shadow-lg items-center justify-center gap-2"
-      >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-        </svg>
-        Adicionar
-      </button>
-    </div>
+    </button>
   );
 }
