@@ -319,34 +319,34 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
       )}
 
       {/* Content */}
-      <div className="relative max-w-6xl mx-auto px-4 py-8">
+      <div className="relative max-w-6xl mx-auto px-3 sm:px-4 py-5 sm:py-8">
         {/* Restaurant Info */}
-        <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-200 p-8 mb-8">
+        <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-200 p-4 sm:p-8 mb-5 sm:mb-8">
           <div className="flex items-center gap-3 mb-4">
             {restaurant?.logoUrl ? (
-              <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg border-2 border-emerald-200">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl overflow-hidden shadow-lg border-2 border-emerald-200">
                 <img src={restaurant.logoUrl} alt={restaurant.name} className="w-full h-full object-cover" />
               </div>
             ) : (
-              <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
               </div>
             )}
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">{restaurant?.name}</h1>
+              <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">{restaurant?.name}</h1>
 
               {/* Slogan motivador do restaurante */}
               {restaurant?.slogan && (
                 <div className="mt-3 mb-2">
-                  <p className="text-2xl font-semibold text-emerald-600 italic">
+                  <p className="text-lg sm:text-2xl font-semibold text-emerald-600 italic">
                     "{restaurant.slogan}"
                   </p>
                 </div>
               )}
 
-              {restaurant?.description && <p className="text-gray-600 mt-1">{restaurant.description}</p>}
+              {restaurant?.description && <p className="text-sm sm:text-base text-gray-600 mt-1">{restaurant.description}</p>}
             </div>
           </div>
           {restaurant?.address && (
@@ -355,15 +355,15 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <p className="text-gray-700">{restaurant.address}</p>
+              <p className="text-sm sm:text-base text-gray-700">{restaurant.address}</p>
             </div>
           )}
         </div>
 
         {/* Menu */}
-        <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-200 p-8">
-          <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-8">
-            <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-200 p-4 sm:p-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3 mb-6 sm:mb-8">
+            <svg className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
             Cardápio
@@ -410,11 +410,11 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
 
               {restaurant?.categories?.map((category: any) => (
                 category.products?.length > 0 && (
-                  <div key={category.id} id={`category-${category.id}`} className="mb-12 last:mb-0 scroll-mt-36">
-                    <h3 className="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b-2 border-gray-200">
+                  <div key={category.id} id={`category-${category.id}`} className="mb-8 sm:mb-12 last:mb-0 scroll-mt-36">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 pb-3 border-b-2 border-gray-200">
                       {category.name}
                     </h3>
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid gap-3 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {category.products.map((product: any) => (
                         <ProductCard key={product.id} product={product} onAdd={() => addToCart(product)} />
                       ))}
@@ -424,11 +424,11 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
               ))}
 
               {restaurant?.productsWithoutCategory?.length > 0 && (
-                <div id="category-outros" className="mb-12 last:mb-0 scroll-mt-36">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b-2 border-gray-200">
+                <div id="category-outros" className="mb-8 sm:mb-12 last:mb-0 scroll-mt-36">
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 pb-3 border-b-2 border-gray-200">
                     Outros itens
                   </h3>
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid gap-3 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {restaurant.productsWithoutCategory.map((product: any) => (
                       <ProductCard key={product.id} product={product} onAdd={() => addToCart(product)} />
                     ))}
@@ -473,14 +473,14 @@ function ProductCard({ product, onAdd }: { product: any; onAdd: () => void }) {
   const priceInReais = (product.priceCents / 100).toFixed(2).replace('.', ',');
 
   return (
-    <div className="border-2 border-gray-200 rounded-2xl overflow-hidden hover:shadow-xl hover:border-emerald-300 transition bg-white flex flex-col">
+    <div className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-xl hover:border-emerald-300 transition bg-white flex flex-row md:flex-col items-stretch p-3 md:p-0 gap-3 md:gap-0">
       {/* Imagem do produto */}
       {product.imageUrl && (
-        <div className="relative w-full bg-gray-100 flex items-center justify-center min-h-48">
+        <div className="relative w-28 h-28 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100 flex items-center justify-center md:w-full md:h-auto md:min-h-48 md:rounded-none">
           <img
             src={product.imageUrl}
             alt={product.name}
-            className="w-full h-auto object-contain"
+            className="w-full h-full object-contain"
             onError={(e) => {
               // Se a imagem falhar ao carregar, esconde o elemento
               e.currentTarget.style.display = 'none';
@@ -492,18 +492,24 @@ function ProductCard({ product, onAdd }: { product: any; onAdd: () => void }) {
         </div>
       )}
 
-      <div className="p-6 flex-1 flex flex-col">
-        <h4 className="font-bold text-xl text-gray-900 mb-3">{product.name}</h4>
+      <div className="min-w-0 flex-1 flex flex-col md:p-6">
+        <h4 className="font-bold text-lg md:text-xl leading-tight text-gray-900 mb-2 md:mb-3 line-clamp-2">{product.name}</h4>
         {product.description && (
-          <p className="text-gray-600 text-sm mb-4 line-clamp-3">{product.description}</p>
+          <p className="text-gray-600 text-sm mb-3 md:mb-4 line-clamp-2 md:line-clamp-3">{product.description}</p>
         )}
-        <div className="text-3xl font-bold text-emerald-600 mb-4 mt-auto">
+        <div className="text-2xl md:text-3xl font-bold text-emerald-600 mb-3 md:mb-4 mt-auto">
           R$ {priceInReais}
         </div>
+        <button
+          onClick={onAdd}
+          className="md:hidden inline-flex items-center justify-center self-start px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold text-sm shadow-md"
+        >
+          Adicionar
+        </button>
       </div>
       <button
         onClick={onAdd}
-        className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-3.5 rounded-xl transition shadow-lg flex items-center justify-center gap-2"
+        className="hidden md:flex w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-3.5 rounded-xl transition shadow-lg items-center justify-center gap-2"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
