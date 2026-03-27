@@ -19,6 +19,14 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
 
+  const visibleCategoryIds = [
+    ...(restaurant?.categories
+      ?.filter((category: any) => category.products?.length > 0)
+      .map((category: any) => category.id) || []),
+    ...(restaurant?.productsWithoutCategory?.length > 0 ? ['outros'] : []),
+  ];
+  const visibleCategoryIdsKey = visibleCategoryIds.join('|');
+
   useEffect(() => {
     async function loadRestaurant() {
       try {
@@ -61,16 +69,45 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
     loadBanners();
   }, [restaurant?.id]);
 
-  // Controla visibilidade da barra de categorias baseado no scroll
+  // Controla visibilidade da barra de categorias e sincroniza a categoria ativa com o scroll
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
       setShowCategoryBar(scrollY > 400);
+
+      if (!visibleCategoryIds.length) return;
+
+      const triggerLine = scrollY + 180;
+      let currentCategory = visibleCategoryIds[0];
+
+      for (const categoryId of visibleCategoryIds) {
+        const element = document.getElementById(`category-${categoryId}`);
+        if (!element) continue;
+
+        if (element.offsetTop <= triggerLine) {
+          currentCategory = categoryId;
+        }
+      }
+
+      setActiveCategory((previous) => (previous === currentCategory ? previous : currentCategory));
     };
 
     window.addEventListener('scroll', handleScroll);
+    handleScroll();
+
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [visibleCategoryIdsKey]);
+
+  useEffect(() => {
+    if (!activeCategory || !showCategoryBar) return;
+
+    const activeTab = document.getElementById(`category-tab-${activeCategory}`);
+    activeTab?.scrollIntoView({
+      behavior: 'smooth',
+      inline: 'center',
+      block: 'nearest',
+    });
+  }, [activeCategory, showCategoryBar]);
 
   useEffect(() => {
     if (!selectedProduct) return;
@@ -314,6 +351,7 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
                 {restaurant?.categories?.map((category: any) => (
                   category.products?.length > 0 && (
                     <button
+                      id={`category-tab-${category.id}`}
                       key={category.id}
                       onClick={() => scrollToCategory(category.id)}
                       className={`px-4 py-2 rounded-lg font-semibold transition whitespace-nowrap ${
@@ -328,6 +366,7 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
                 ))}
                 {restaurant?.productsWithoutCategory?.length > 0 && (
                   <button
+                    id="category-tab-outros"
                     onClick={() => scrollToCategory('outros')}
                     className={`px-4 py-2 rounded-lg font-semibold transition whitespace-nowrap ${
                       activeCategory === 'outros'
