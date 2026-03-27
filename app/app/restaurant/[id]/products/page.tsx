@@ -8,18 +8,39 @@ import { api, getToken } from "../../../../lib/api";
 type Product = {
   id: string;
   name: string;
+  pdvCode?: string | null;
+  portionSize?: string | null;
+  servesUpTo?: number | null;
   description: string | null;
   priceCents: number;
   isActive: boolean;
   sortOrder: number;
   categoryId: string | null;
   imageUrl: string | null;
+  hasComplements?: boolean;
+  complementGroups?: ComplementGroup[];
   createdAt: string;
   updatedAt: string;
   category?: {
     id: string;
     name: string;
   } | null;
+};
+
+type ComplementOption = {
+  name: string;
+  priceCents: number;
+  status: "active" | "inactive" | "out_of_stock";
+  sortOrder?: number;
+};
+
+type ComplementGroup = {
+  title: string;
+  minSelect: number;
+  maxSelect: number;
+  status: "active" | "inactive" | "out_of_stock";
+  sortOrder?: number;
+  options: ComplementOption[];
 };
 
 type Category = {
@@ -45,6 +66,9 @@ export default function ProductsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [name, setName] = useState("");
+  const [pdvCode, setPdvCode] = useState("");
+  const [portionSize, setPortionSize] = useState("");
+  const [servesUpTo, setServesUpTo] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -53,6 +77,16 @@ export default function ProductsPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [uploading, setUploading] = useState(false);
+  const [hasComplements, setHasComplements] = useState(false);
+  const [complementGroups, setComplementGroups] = useState<ComplementGroup[]>([]);
+  const [showComplementEditor, setShowComplementEditor] = useState(false);
+  const [editingGroupIndex, setEditingGroupIndex] = useState<number | null>(null);
+
+  const [groupTitle, setGroupTitle] = useState("");
+  const [groupMinSelect, setGroupMinSelect] = useState("0");
+  const [groupMaxSelect, setGroupMaxSelect] = useState("1");
+  const [groupStatus, setGroupStatus] = useState<"active" | "inactive" | "out_of_stock">("active");
+  const [groupOptions, setGroupOptions] = useState<ComplementOption[]>([]);
 
   // Load data
   useEffect(() => {
@@ -102,6 +136,9 @@ export default function ProductsPage() {
     console.log("Editando produto:", product);
     setEditingProduct(product);
     setName(product.name);
+    setPdvCode(product.pdvCode || "");
+    setPortionSize(product.portionSize || "");
+    setServesUpTo(product.servesUpTo ? String(product.servesUpTo) : "");
     setDescription(product.description || "");
     setPrice((product.priceCents / 100).toString());
     setCategoryId(product.categoryId || "");
@@ -109,6 +146,15 @@ export default function ProductsPage() {
     setImageUrl(product.imageUrl || "");
     setImageFile(null);
     setImagePreview(product.imageUrl || "");
+    setHasComplements(!!product.hasComplements);
+    setComplementGroups((product.complementGroups || []).map((group, groupIndex) => ({
+      ...group,
+      sortOrder: group.sortOrder ?? groupIndex,
+      options: (group.options || []).map((option, optionIndex) => ({
+        ...option,
+        sortOrder: option.sortOrder ?? optionIndex,
+      })),
+    })));
     setShowForm(true);
   }
 
@@ -121,6 +167,9 @@ export default function ProductsPage() {
 
   function resetForm() {
     setName("");
+    setPdvCode("");
+    setPortionSize("");
+    setServesUpTo("");
     setDescription("");
     setPrice("");
     setCategoryId("");
@@ -128,6 +177,116 @@ export default function ProductsPage() {
     setImageUrl("");
     setImageFile(null);
     setImagePreview("");
+    setHasComplements(false);
+    setComplementGroups([]);
+    resetComplementEditor();
+  }
+
+  function resetComplementEditor() {
+    setEditingGroupIndex(null);
+    setGroupTitle("");
+    setGroupMinSelect("0");
+    setGroupMaxSelect("1");
+    setGroupStatus("active");
+    setGroupOptions([]);
+  }
+
+  function openNewComplementGroup() {
+    resetComplementEditor();
+    setShowComplementEditor(true);
+  }
+
+  function openEditComplementGroup(index: number) {
+    const group = complementGroups[index];
+    if (!group) return;
+
+    setEditingGroupIndex(index);
+    setGroupTitle(group.title);
+    setGroupMinSelect(String(group.minSelect));
+    setGroupMaxSelect(String(group.maxSelect));
+    setGroupStatus(group.status);
+    setGroupOptions(group.options || []);
+    setShowComplementEditor(true);
+  }
+
+  function addEmptyOption() {
+    setGroupOptions((previous) => [
+      ...previous,
+      {
+        name: "",
+        priceCents: 0,
+        status: "active",
+      },
+    ]);
+  }
+
+  function updateGroupOption(index: number, patch: Partial<ComplementOption>) {
+    setGroupOptions((previous) => previous.map((option, optionIndex) => (
+      optionIndex === index ? { ...option, ...patch } : option
+    )));
+  }
+
+  function removeGroupOption(index: number) {
+    setGroupOptions((previous) => previous.filter((_, optionIndex) => optionIndex !== index));
+  }
+
+  function saveComplementGroup() {
+    if (!groupTitle.trim()) {
+      setError("Título da variação é obrigatório");
+      return;
+    }
+
+    const minSelect = Math.max(0, Number(groupMinSelect || "0"));
+    const maxSelect = Math.max(1, Number(groupMaxSelect || "1"));
+
+    if (minSelect > maxSelect) {
+      setError("Quantidade mínima não pode ser maior que a máxima");
+      return;
+    }
+
+    const normalizedOptions = groupOptions
+      .map((option, index) => ({
+        name: option.name.trim(),
+        priceCents: Number(option.priceCents || 0),
+        status: option.status,
+        sortOrder: option.sortOrder ?? index,
+      }))
+      .filter((option) => option.name.length > 0)
+      .map((option, index) => ({ ...option, sortOrder: index }));
+
+    if (normalizedOptions.length === 0) {
+      setError("Adicione pelo menos uma opção no complemento");
+      return;
+    }
+
+    const payload: ComplementGroup = {
+      title: groupTitle.trim(),
+      minSelect,
+      maxSelect,
+      status: groupStatus,
+      options: normalizedOptions,
+    };
+
+    setComplementGroups((previous) => {
+      if (editingGroupIndex === null) {
+        return [...previous, { ...payload, sortOrder: previous.length }];
+      }
+
+      return previous.map((group, index) => (
+        index === editingGroupIndex ? { ...payload, sortOrder: index } : group
+      ));
+    });
+
+    setError("");
+    setShowComplementEditor(false);
+    resetComplementEditor();
+  }
+
+  function deleteComplementGroup(index: number) {
+    setComplementGroups((previous) => previous
+      .filter((_, groupIndex) => groupIndex !== index)
+      .map((group, groupIndex) => ({ ...group, sortOrder: groupIndex }))
+    );
   }
 
   // Handle image file selection
@@ -237,11 +396,30 @@ export default function ProductsPage() {
       const productData = {
         restaurantId,
         name: name.trim(),
+        pdvCode: pdvCode.trim() || null,
+        portionSize: portionSize.trim() || null,
+        servesUpTo: servesUpTo ? Number(servesUpTo) : null,
         description: description.trim() || null,
         priceCents,
         categoryId: categoryId || null,
         isActive,
         imageUrl: finalImageUrl || null,
+        hasComplements,
+        complementGroups: hasComplements
+          ? complementGroups.map((group, groupIndex) => ({
+              title: group.title,
+              minSelect: group.minSelect,
+              maxSelect: group.maxSelect,
+              status: group.status,
+              sortOrder: group.sortOrder ?? groupIndex,
+              options: (group.options || []).map((option, optionIndex) => ({
+                name: option.name,
+                priceCents: option.priceCents,
+                status: option.status,
+                sortOrder: option.sortOrder ?? optionIndex,
+              })),
+            }))
+          : [],
       };
 
       console.log("Dados do produto:", productData);
@@ -465,6 +643,46 @@ export default function ProductsPage() {
                   </p>
                 </div>
 
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Código PDV
+                  </label>
+                  <input
+                    type="text"
+                    value={pdvCode}
+                    onChange={(e) => setPdvCode(e.target.value)}
+                    className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition"
+                    placeholder="Ex: PDV-001"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Tamanho da porção
+                  </label>
+                  <input
+                    type="text"
+                    value={portionSize}
+                    onChange={(e) => setPortionSize(e.target.value)}
+                    className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition"
+                    placeholder="Ex: 350 g"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Serve até
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={servesUpTo}
+                    onChange={(e) => setServesUpTo(e.target.value)}
+                    className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition"
+                    placeholder="Ex: 4"
+                  />
+                </div>
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Descrição
@@ -546,6 +764,73 @@ export default function ProductsPage() {
                   </label>
                 </div>
 
+                <div className="md:col-span-2 rounded-xl border-2 border-gray-200 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-700">Adicionar complemento</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Habilite para configurar adicionais na tela do cliente
+                      </p>
+                    </div>
+                    <label className="inline-flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={hasComplements}
+                        onChange={(e) => setHasComplements(e.target.checked)}
+                        className="w-5 h-5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
+                      />
+                      <span className="text-sm font-semibold text-gray-700">Usar adicionais</span>
+                    </label>
+                  </div>
+
+                  {hasComplements && (
+                    <div className="mt-4 space-y-3">
+                      <button
+                        type="button"
+                        onClick={openNewComplementGroup}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-emerald-200 text-emerald-700 font-semibold hover:bg-emerald-50 transition"
+                      >
+                        + Adicionar complemento
+                      </button>
+
+                      {complementGroups.length === 0 ? (
+                        <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                          Nenhum complemento configurado. Clique em "+ Adicionar complemento".
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          {complementGroups.map((group, groupIndex) => (
+                            <div key={`${group.title}-${groupIndex}`} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 p-3">
+                              <div>
+                                <p className="font-semibold text-gray-900">{group.title}</p>
+                                <p className="text-xs text-gray-600">
+                                  Escolha de {group.minSelect} até {group.maxSelect} | {group.options.length} opção(ões)
+                                </p>
+                              </div>
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => openEditComplementGroup(groupIndex)}
+                                  className="px-3 py-1.5 rounded-lg border border-blue-200 text-blue-700 text-sm font-semibold hover:bg-blue-50"
+                                >
+                                  Editar
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => deleteComplementGroup(groupIndex)}
+                                  className="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 text-sm font-semibold hover:bg-red-50"
+                                >
+                                  Excluir
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 <div className="md:col-span-2 flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
                   <input
                     type="checkbox"
@@ -582,6 +867,161 @@ export default function ProductsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        )}
+
+        {showComplementEditor && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-3xl rounded-2xl bg-white shadow-2xl max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-gray-200 p-5 flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-900">Editar complemento</h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowComplementEditor(false);
+                    resetComplementEditor();
+                  }}
+                  className="w-10 h-10 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="p-5 space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Título da variação</label>
+                  <input
+                    type="text"
+                    value={groupTitle}
+                    onChange={(e) => setGroupTitle(e.target.value)}
+                    className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
+                    placeholder="Ex: Adicional"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">O cliente escolherá de</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={groupMinSelect}
+                      onChange={(e) => setGroupMinSelect(e.target.value)}
+                      className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">até</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={groupMaxSelect}
+                      onChange={(e) => setGroupMaxSelect(e.target.value)}
+                      className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                    <select
+                      value={groupStatus}
+                      onChange={(e) => setGroupStatus(e.target.value as "active" | "inactive" | "out_of_stock")}
+                      className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 outline-none focus:border-emerald-500"
+                    >
+                      <option value="active">Ativo</option>
+                      <option value="inactive">Inativo</option>
+                      <option value="out_of_stock">Em falta</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-gray-900">Opções</h4>
+                    <button
+                      type="button"
+                      onClick={addEmptyOption}
+                      className="px-3 py-1.5 rounded-lg border border-emerald-200 text-emerald-700 text-sm font-semibold hover:bg-emerald-50"
+                    >
+                      + Adicionar nova opção
+                    </button>
+                  </div>
+
+                  {groupOptions.length === 0 && (
+                    <p className="text-sm text-gray-500">Nenhuma opção adicionada ainda.</p>
+                  )}
+
+                  {groupOptions.map((option, optionIndex) => (
+                    <div key={`option-${optionIndex}`} className="grid grid-cols-1 md:grid-cols-12 gap-3 rounded-xl border border-gray-200 p-3">
+                      <div className="md:col-span-5">
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Nome da opção</label>
+                        <input
+                          type="text"
+                          value={option.name}
+                          onChange={(e) => updateGroupOption(optionIndex, { name: e.target.value })}
+                          className="w-full rounded-lg border border-gray-200 px-3 py-2 outline-none focus:border-emerald-500"
+                          placeholder="Ex: Hambúrguer (4 hambúrgueres)"
+                        />
+                      </div>
+                      <div className="md:col-span-3">
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Preço (R$)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={(option.priceCents / 100).toFixed(2)}
+                          onChange={(e) => {
+                            const cents = Math.round(Number(e.target.value || "0") * 100);
+                            updateGroupOption(optionIndex, { priceCents: isNaN(cents) ? 0 : cents });
+                          }}
+                          className="w-full rounded-lg border border-gray-200 px-3 py-2 outline-none focus:border-emerald-500"
+                        />
+                      </div>
+                      <div className="md:col-span-3">
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Status</label>
+                        <select
+                          value={option.status}
+                          onChange={(e) => updateGroupOption(optionIndex, { status: e.target.value as "active" | "inactive" | "out_of_stock" })}
+                          className="w-full rounded-lg border border-gray-200 px-3 py-2 outline-none focus:border-emerald-500"
+                        >
+                          <option value="active">Ativo</option>
+                          <option value="inactive">Inativo</option>
+                          <option value="out_of_stock">Em falta</option>
+                        </select>
+                      </div>
+                      <div className="md:col-span-1 flex items-end">
+                        <button
+                          type="button"
+                          onClick={() => removeGroupOption(optionIndex)}
+                          className="w-full rounded-lg border border-red-200 text-red-700 px-2 py-2 hover:bg-red-50"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="sticky bottom-0 bg-white border-t border-gray-200 p-5 flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowComplementEditor(false);
+                    resetComplementEditor();
+                  }}
+                  className="px-5 py-2.5 rounded-xl border-2 border-gray-200 font-semibold text-gray-700 hover:bg-gray-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={saveComplementGroup}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:from-emerald-700 hover:to-teal-700"
+                >
+                  Salvar complemento
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -676,6 +1116,30 @@ export default function ProductsPage() {
                         <span className="text-2xl font-bold text-emerald-600">
                           R$ {(product.priceCents / 100).toFixed(2).replace('.', ',')}
                         </span>
+
+                        {product.pdvCode && (
+                          <span className="px-3 py-1 bg-indigo-50 rounded-lg text-sm font-medium text-indigo-700 border border-indigo-200">
+                            PDV: {product.pdvCode}
+                          </span>
+                        )}
+
+                        {product.portionSize && (
+                          <span className="px-3 py-1 bg-purple-50 rounded-lg text-sm font-medium text-purple-700 border border-purple-200">
+                            Porção: {product.portionSize}
+                          </span>
+                        )}
+
+                        {product.servesUpTo && (
+                          <span className="px-3 py-1 bg-emerald-50 rounded-lg text-sm font-medium text-emerald-700 border border-emerald-200">
+                            Serve até {product.servesUpTo}
+                          </span>
+                        )}
+
+                        {product.hasComplements && (
+                          <span className="px-3 py-1 bg-amber-50 rounded-lg text-sm font-medium text-amber-700 border border-amber-200">
+                            + Adicionais
+                          </span>
+                        )}
 
                         {product.category && (
                           <span className="px-3 py-1 bg-gray-100 rounded-lg text-sm font-medium text-gray-700 border border-gray-200">

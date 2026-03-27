@@ -68,7 +68,14 @@ export default function CustomerStep({ onBack, restaurantSlug }: CustomerStepPro
           cpfCnpj: cpfCnpj || undefined
         },
         address: address || undefined,
-        items: cart.map(item => ({ productId: item.productId, quantity: item.quantity })),
+        items: cart.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          selectedOptionIds: item.selectedOptionIds || [],
+          notes: item.selectedOptions && item.selectedOptions.length > 0
+            ? `Adicionais: ${item.selectedOptions.map((option) => option.name).join(", ")}`
+            : undefined,
+        })),
         paymentMethod,
         notes: notes || undefined,
         deliveryFeeCents: 0,

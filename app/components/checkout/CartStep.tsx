@@ -94,19 +94,24 @@ export default function CartStep({ onNext, restaurantId }: CartStepProps) {
 
       <div className="space-y-4">
         {cart.map((item) => (
-          <div key={item.productId} className="flex items-center gap-4 p-4 bg-white rounded-xl border-2 border-gray-200">
+          <div key={item.lineId} className="flex items-center gap-4 p-4 bg-white rounded-xl border-2 border-gray-200">
             <div className="flex-1">
               <h4 className="font-bold text-gray-900">{item.productName}</h4>
               <p className="text-sm text-gray-500">R$ {(item.priceCents / 100).toFixed(2).replace(".", ",")}</p>
+              {item.selectedOptions && item.selectedOptions.length > 0 && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Adicionais: {item.selectedOptions.map((option) => option.name).join(", ")}
+                </p>
+              )}
             </div>
             
             <div className="flex items-center gap-3">
-              <button onClick={() => updateQuantity(item.productId, item.quantity - 1)} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center font-bold">-</button>
+              <button onClick={() => updateQuantity(item.lineId, item.quantity - 1)} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center font-bold">-</button>
               <span className="font-bold w-8 text-center">{item.quantity}</span>
-              <button onClick={() => updateQuantity(item.productId, item.quantity + 1)} className="w-8 h-8 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center font-bold">+</button>
+              <button onClick={() => updateQuantity(item.lineId, item.quantity + 1)} className="w-8 h-8 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center font-bold">+</button>
             </div>
 
-            <button onClick={() => removeFromCart(item.productId)} className="text-red-600 hover:text-red-700 p-2">
+            <button onClick={() => removeFromCart(item.lineId)} className="text-red-600 hover:text-red-700 p-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>

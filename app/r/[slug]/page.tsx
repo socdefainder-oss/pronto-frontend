@@ -18,6 +18,7 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
   const [showSidebar, setShowSidebar] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [selectedComplementOptionIds, setSelectedComplementOptionIds] = useState<Record<string, string[]>>({});
 
   const visibleCategoryIds = [
     ...(restaurant?.categories
@@ -161,16 +162,65 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
   const openProductDetails = (product: any) => {
     setSelectedProduct(product);
     setSelectedQuantity(1);
+    setSelectedComplementOptionIds({});
   };
 
   const closeProductDetails = () => {
     setSelectedProduct(null);
     setSelectedQuantity(1);
+    setSelectedComplementOptionIds({});
+  };
+
+  const toggleComplementOption = (groupId: string, optionId: string, maxSelect: number) => {
+    setSelectedComplementOptionIds((previous) => {
+      const selectedInGroup = previous[groupId] || [];
+      const alreadySelected = selectedInGroup.includes(optionId);
+
+      if (alreadySelected) {
+        return {
+          ...previous,
+          [groupId]: selectedInGroup.filter((id) => id !== optionId),
+        };
+      }
+
+      if (selectedInGroup.length >= maxSelect) {
+        alert(`Você pode selecionar até ${maxSelect} opção(ões) neste adicional.`);
+        return previous;
+      }
+
+      return {
+        ...previous,
+        [groupId]: [...selectedInGroup, optionId],
+      };
+    });
   };
 
   const addSelectedProductToCart = () => {
     if (!selectedProduct) return;
-    addToCart(selectedProduct, selectedQuantity);
+
+    const activeGroups = (selectedProduct.complementGroups || []).filter((group: any) => group.status === "active");
+
+    for (const group of activeGroups) {
+      const selectedCount = (selectedComplementOptionIds[group.id] || []).length;
+      if (selectedCount < group.minSelect || selectedCount > group.maxSelect) {
+        alert(`No adicional ${group.title}, selecione de ${group.minSelect} até ${group.maxSelect} opção(ões).`);
+        return;
+      }
+    }
+
+    const selectedOptions = activeGroups.flatMap((group: any) => {
+      const selectedIds = selectedComplementOptionIds[group.id] || [];
+      return (group.options || [])
+        .filter((option: any) => selectedIds.includes(option.id))
+        .map((option: any) => ({
+          id: option.id,
+          name: option.name,
+          priceCents: option.priceCents,
+          groupTitle: group.title,
+        }));
+    });
+
+    addToCart(selectedProduct, selectedQuantity, selectedOptions);
     closeProductDetails();
   };
 
@@ -208,6 +258,19 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
   const hasCategoriesWithProducts = restaurant?.categories?.some((cat: any) => cat.products?.length > 0);
   const hasProductsWithoutCategory = restaurant?.productsWithoutCategory?.length > 0;
   const hasProducts = hasCategoriesWithProducts || hasProductsWithoutCategory;
+  const activeComplementGroups = selectedProduct
+    ? (selectedProduct.complementGroups || []).filter((group: any) => group.status === "active")
+    : [];
+  const selectedComplementOptions = selectedProduct
+    ? activeComplementGroups.flatMap((group: any) => {
+        const selectedIds = selectedComplementOptionIds[group.id] || [];
+        return (group.options || []).filter((option: any) => selectedIds.includes(option.id));
+      })
+    : [];
+  const selectedComplementsTotalCents = selectedComplementOptions.reduce(
+    (sum: number, option: any) => sum + option.priceCents,
+    0
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 pb-24">
@@ -567,9 +630,80 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
                 {selectedProduct.description && (
                   <p className="mt-4 text-lg leading-8 text-gray-600 md:text-xl">{selectedProduct.description}</p>
                 )}
+                {(selectedProduct.portionSize || selectedProduct.servesUpTo) && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {selectedProduct.portionSize && (
+                      <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm font-semibold border border-gray-200">
+                        Porção: {selectedProduct.portionSize}
+                      </span>
+                    )}
+                    {selectedProduct.servesUpTo && (
+                      <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-sm font-semibold border border-emerald-200">
+                        Serve até {selectedProduct.servesUpTo} pessoa(s)
+                      </span>
+                    )}
+                  </div>
+                )}
                 <p className="mt-6 text-2xl font-semibold text-gray-700 md:text-3xl">
                   A partir de <span className="font-bold text-gray-900">R$ {(selectedProduct.priceCents / 100).toFixed(2).replace('.', ',')}</span>
                 </p>
+
+                {selectedProduct.hasComplements && activeComplementGroups.length > 0 && (
+                  <div className="mt-8 space-y-6 border-t border-gray-200 pt-6">
+                    {activeComplementGroups.map((group: any) => {
+                      const selectedCount = (selectedComplementOptionIds[group.id] || []).length;
+
+                      return (
+                        <div key={group.id} className="space-y-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <h3 className="text-2xl font-bold text-gray-900">{group.title}</h3>
+                            <span className="text-sm font-semibold text-gray-600 bg-gray-100 px-3 py-1 rounded-lg">
+                              Escolha de {group.minSelect} até {group.maxSelect} ({selectedCount}/{group.maxSelect})
+                            </span>
+                          </div>
+
+                          <div className="space-y-2">
+                            {(group.options || []).map((option: any) => {
+                              const isAvailable = option.status === "active";
+                              const isSelected = (selectedComplementOptionIds[group.id] || []).includes(option.id);
+
+                              return (
+                                <button
+                                  key={option.id}
+                                  type="button"
+                                  disabled={!isAvailable}
+                                  onClick={() => toggleComplementOption(group.id, option.id, group.maxSelect)}
+                                  className={`w-full flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition ${
+                                    isSelected
+                                      ? "border-emerald-500 bg-emerald-50"
+                                      : "border-gray-200 bg-white"
+                                  } ${!isAvailable ? "opacity-60 cursor-not-allowed" : "hover:border-emerald-300"}`}
+                                >
+                                  <div>
+                                    <p className="text-lg font-semibold text-gray-900">{option.name}</p>
+                                    <p className="text-sm text-gray-600">+R$ {(option.priceCents / 100).toFixed(2).replace('.', ',')}</p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {!isAvailable && (
+                                      <span className="text-xs font-semibold px-2 py-1 rounded-md bg-red-50 text-red-700 border border-red-200">
+                                        {option.status === "out_of_stock" ? "Em falta" : "Inativo"}
+                                      </span>
+                                    )}
+                                    {isSelected ? (
+                                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white text-xl">✓</span>
+                                    ) : (
+                                      <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-300 text-emerald-600 text-2xl">+</span>
+                                    )}
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -597,7 +731,7 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
                   onClick={addSelectedProductToCart}
                   className="flex-1 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 text-lg font-bold text-white shadow-lg transition hover:from-emerald-700 hover:to-teal-700"
                 >
-                  Adicionar R$ {((selectedProduct.priceCents * selectedQuantity) / 100).toFixed(2).replace('.', ',')}
+                  Adicionar R$ {(((selectedProduct.priceCents + selectedComplementsTotalCents) * selectedQuantity) / 100).toFixed(2).replace('.', ',')}
                 </button>
               </div>
             </div>

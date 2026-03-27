@@ -3,17 +3,34 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 interface CartItem {
+  lineId: string;
   productId: string;
   productName: string;
   priceCents: number;
   quantity: number;
+  selectedOptionIds?: string[];
+  selectedOptions?: Array<{
+    id: string;
+    name: string;
+    priceCents: number;
+    groupTitle?: string;
+  }>;
 }
 
 interface CartContextData {
   cart: CartItem[];
-  addToCart: (product: any, quantity?: number) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addToCart: (
+    product: any,
+    quantity?: number,
+    selectedOptions?: Array<{
+      id: string;
+      name: string;
+      priceCents: number;
+      groupTitle?: string;
+    }>
+  ) => void;
+  removeFromCart: (lineId: string) => void;
+  updateQuantity: (lineId: string, quantity: number) => void;
   clearCart: () => void;
   cartTotal: number;
   cartCount: number;
@@ -45,36 +62,56 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [cart]);
 
-  const addToCart = (product: any, quantity = 1) => {
+  const addToCart = (
+    product: any,
+    quantity = 1,
+    selectedOptions: Array<{
+      id: string;
+      name: string;
+      priceCents: number;
+      groupTitle?: string;
+    }> = []
+  ) => {
     if (quantity <= 0) return;
 
+    const selectedOptionIds = selectedOptions.map((option) => option.id).sort();
+    const lineId = selectedOptionIds.length > 0
+      ? `${product.id}::${selectedOptionIds.join(",")}`
+      : product.id;
+
+    const extraPriceCents = selectedOptions.reduce((sum, option) => sum + option.priceCents, 0);
+    const unitPriceCents = product.priceCents + extraPriceCents;
+
     setCart((prev) => {
-      const existing = prev.find((item) => item.productId === product.id);
+      const existing = prev.find((item) => item.lineId === lineId);
       if (existing) {
         return prev.map((item) =>
-          item.productId === product.id ? { ...item, quantity: item.quantity + quantity } : item
+          item.lineId === lineId ? { ...item, quantity: item.quantity + quantity } : item
         );
       }
       return [...prev, {
+        lineId,
         productId: product.id,
         productName: product.name,
-        priceCents: product.priceCents,
+        priceCents: unitPriceCents,
         quantity,
+        selectedOptionIds,
+        selectedOptions,
       }];
     });
   };
 
-  const removeFromCart = (productId: string) => {
-    setCart((prev) => prev.filter((item) => item.productId !== productId));
+  const removeFromCart = (lineId: string) => {
+    setCart((prev) => prev.filter((item) => item.lineId !== lineId));
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (lineId: string, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(lineId);
       return;
     }
     setCart((prev) =>
-      prev.map((item) => (item.productId === productId ? { ...item, quantity } : item))
+      prev.map((item) => (item.lineId === lineId ? { ...item, quantity } : item))
     );
   };
 
