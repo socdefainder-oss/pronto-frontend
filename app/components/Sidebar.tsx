@@ -131,7 +131,7 @@ export default function Sidebar() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
         </svg>
       ),
-      href: `/app/restaurant/${restaurantId}`,
+      href: `/app/restaurant/${restaurantId}/products`,
       subItems: [
         { label: "Produtos", href: `/app/restaurant/${restaurantId}/products` },
         { label: "Categorias", href: `/app/restaurant/${restaurantId}/categories` },
@@ -341,7 +341,7 @@ export default function Sidebar() {
                       {restaurants.filter(r => r.id !== restaurantId).map((restaurant) => (
                         <Link
                           key={restaurant.id}
-                          href={`/app/restaurant/${restaurant.id}`}
+                          href={`/app/restaurant/${restaurant.id}/products`}
                           className="block px-3 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
                           onClick={() => setShowRestaurantDropdown(false)}
                         >

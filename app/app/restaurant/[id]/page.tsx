@@ -31,6 +31,11 @@ export default function ProductsPage() {
   const router = useRouter();
   const restaurantId = params?.id as string;
 
+  useEffect(() => {
+    if (!restaurantId) return;
+    router.replace(`/app/restaurant/${restaurantId}/products`);
+  }, [restaurantId, router]);
+
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);

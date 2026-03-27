@@ -273,7 +273,7 @@ export default function AppHome() {
                         <tr 
                           key={r.id} 
                           className="hover:bg-gray-50 transition-colors cursor-pointer"
-                          onClick={() => router.push(`/app/restaurant/${r.id}`)}
+                          onClick={() => router.push(`/app/restaurant/${r.id}/products`)}
                         >
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
@@ -331,7 +331,7 @@ export default function AppHome() {
                                 Ver Cardápio
                               </Link>
                               <Link
-                                href={`/app/restaurant/${r.id}`}
+                                href={`/app/restaurant/${r.id}/products`}
                                 onClick={(e) => e.stopPropagation()}
                                 className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition"
                               >
