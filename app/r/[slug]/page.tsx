@@ -280,23 +280,10 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
       </div>
 
-      {/* Banner da Loja */}
-      {restaurant?.bannerUrl && (
-        <div className="sticky top-0 z-30 w-full">
-          <div className="w-full h-48 sm:h-64 overflow-hidden bg-gray-200">
-            <img 
-              src={restaurant.bannerUrl} 
-              alt="Banner da loja"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-      )}
-
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-sm border-b border-gray-200 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-3 w-full">
             {/* Menu Hambúrguer */}
             <button
               onClick={() => setShowSidebar(!showSidebar)}
@@ -309,7 +296,18 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
             </button>
 
             <div className="h-8 w-px bg-gray-300"></div>
-            <h1 className="text-xl font-bold text-gray-900 truncate">{restaurant?.name}</h1>
+
+            {restaurant?.bannerUrl ? (
+              <div className="flex-1 h-12 rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-gray-100">
+                <img
+                  src={restaurant.bannerUrl}
+                  alt={`Banner da loja ${restaurant?.name || ""}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="flex-1 h-12 rounded-xl border border-dashed border-gray-300 bg-gray-50"></div>
+            )}
           </div>
         </div>
       </header>
