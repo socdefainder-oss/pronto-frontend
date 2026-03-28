@@ -549,11 +549,11 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
 
               {restaurant?.categories?.map((category: any) => (
                 category.products?.length > 0 && (
-                  <div key={category.id} id={`category-${category.id}`} className="mb-8 sm:mb-12 last:mb-0 scroll-mt-36">
+                  <div key={category.id} id={`category-${category.id}`} className="mb-8 sm:mb-12 last:mb-0 scroll-mt-36 lg:max-w-4xl lg:mx-auto">
                     <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 pb-3 border-b-2 border-gray-200">
                       {category.name}
                     </h3>
-                    <div className="grid gap-3 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="space-y-3 md:space-y-0 md:divide-y md:divide-gray-200 md:rounded-2xl md:border md:border-gray-200 md:overflow-hidden">
                       {category.products.map((product: any) => (
                         <ProductCard key={product.id} product={product} onOpen={() => openProductDetails(product)} />
                       ))}
@@ -563,11 +563,11 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
               ))}
 
               {restaurant?.productsWithoutCategory?.length > 0 && (
-                <div id="category-outros" className="mb-8 sm:mb-12 last:mb-0 scroll-mt-36">
+                <div id="category-outros" className="mb-8 sm:mb-12 last:mb-0 scroll-mt-36 lg:max-w-4xl lg:mx-auto">
                   <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 pb-3 border-b-2 border-gray-200">
                     Outros itens
                   </h3>
-                  <div className="grid gap-3 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  <div className="space-y-3 md:space-y-0 md:divide-y md:divide-gray-200 md:rounded-2xl md:border md:border-gray-200 md:overflow-hidden">
                     {restaurant.productsWithoutCategory.map((product: any) => (
                       <ProductCard key={product.id} product={product} onOpen={() => openProductDetails(product)} />
                     ))}
@@ -759,17 +759,26 @@ function ProductCard({ product, onOpen }: { product: any; onOpen: () => void }) 
     <button
       type="button"
       onClick={onOpen}
-      className="w-full text-left border border-gray-200 rounded-2xl overflow-hidden hover:shadow-xl hover:border-emerald-300 transition bg-white flex flex-row md:flex-col items-stretch p-3 md:p-0 gap-3 md:gap-0"
+      className="w-full text-left border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg hover:border-emerald-300 transition bg-white flex items-stretch p-3 gap-3 md:border-0 md:rounded-none md:shadow-none md:hover:shadow-none md:p-4 md:gap-4"
     >
+      <div className="min-w-0 flex-1 flex flex-col justify-center">
+        <h4 className="font-bold text-lg md:text-xl leading-tight text-gray-900 mb-2 line-clamp-2">{product.name}</h4>
+        {product.description && (
+          <p className="text-gray-600 text-sm md:text-sm mb-3 line-clamp-2 md:line-clamp-2">{product.description}</p>
+        )}
+        <div className="text-lg md:text-2xl font-bold text-gray-700 mb-1 mt-auto leading-none">
+          A partir de <span className="text-emerald-600">R$ {priceInReais}</span>
+        </div>
+      </div>
+
       {/* Imagem do produto */}
       {product.imageUrl && (
-        <div className="relative w-28 h-28 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100 flex items-center justify-center md:w-full md:h-auto md:min-h-48 md:rounded-none">
+        <div className="relative w-28 h-28 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100 flex items-center justify-center md:order-last md:w-44 md:h-32 md:rounded-xl">
           <img
             src={product.imageUrl}
             alt={product.name}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover"
             onError={(e) => {
-              // Se a imagem falhar ao carregar, esconde o elemento
               e.currentTarget.style.display = 'none';
               if (e.currentTarget.parentElement) {
                 e.currentTarget.parentElement.style.display = 'none';
@@ -778,16 +787,6 @@ function ProductCard({ product, onOpen }: { product: any; onOpen: () => void }) 
           />
         </div>
       )}
-
-      <div className="min-w-0 flex-1 flex flex-col md:p-6">
-        <h4 className="font-bold text-lg md:text-xl leading-tight text-gray-900 mb-2 md:mb-3 line-clamp-2">{product.name}</h4>
-        {product.description && (
-          <p className="text-gray-600 text-sm mb-3 md:mb-4 line-clamp-2 md:line-clamp-3">{product.description}</p>
-        )}
-        <div className="text-lg md:text-3xl font-bold text-gray-700 mb-1 mt-auto">
-          A partir de <span className="text-emerald-600">R$ {priceInReais}</span>
-        </div>
-      </div>
     </button>
   );
 }
