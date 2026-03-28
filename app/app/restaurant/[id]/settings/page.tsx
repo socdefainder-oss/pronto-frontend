@@ -29,6 +29,13 @@ export default function RestaurantSettingsPage() {
   const [slogan, setSlogan] = useState("");
   const [address, setAddress] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
+  const [bannerUrl, setBannerUrl] = useState("");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState("");
+  const [bannerPreview, setBannerPreview] = useState("");
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
   const [cnpj, setCnpj] = useState("");
   const [email, setEmail] = useState("");
   
@@ -125,6 +132,9 @@ export default function RestaurantSettingsPage() {
       setSlogan(data.slogan || "");
       setAddress(data.address || "");
       setLogoUrl(data.logoUrl || "");
+      setBannerUrl(data.bannerUrl || "");
+      setLogoPreview(data.logoUrl || "");
+      setBannerPreview(data.bannerUrl || "");
       setCnpj(data.cnpj || "");
       setEmail(data.email || "");
       
@@ -182,6 +192,7 @@ export default function RestaurantSettingsPage() {
           slogan,
           address,
           logoUrl,
+          bannerUrl,
           cnpj,
           email,
           brandName,
@@ -214,6 +225,112 @@ export default function RestaurantSettingsPage() {
       setError(err.message || "Erro ao salvar dados");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function uploadImage(file: File): Promise<string> {
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error("Erro ao ler arquivo"));
+        reader.readAsDataURL(file);
+      });
+
+      const token = getToken();
+      if (!token) throw new Error("Token não encontrado");
+
+      const response = await fetch(`${API_URL}/api/upload/image`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          image: base64,
+          fileName: file.name,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Erro no upload da imagem");
+      }
+
+      const data = await response.json();
+      return data.url;
+    } catch (err: any) {
+      throw new Error(err.message || "Erro ao fazer upload");
+    }
+  }
+
+  async function handleLogoImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("Arquivo deve ser uma imagem");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Imagem muito grande. Máximo: 5MB");
+      return;
+    }
+
+    setLogoFile(file);
+    const preview = URL.createObjectURL(file);
+    setLogoPreview(preview);
+    setError("");
+
+    // Fazer upload automaticamente
+    setUploadingLogo(true);
+    try {
+      const url = await uploadImage(file);
+      setLogoUrl(url);
+      setSuccess("Logo carregada com sucesso!");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err: any) {
+      setError(err.message || "Erro ao enviar logo");
+      setLogoPreview("");
+      setLogoFile(null);
+    } finally {
+      setUploadingLogo(false);
+    }
+  }
+
+  async function handleBannerImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("Arquivo deve ser uma imagem");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Imagem muito grande. Máximo: 5MB");
+      return;
+    }
+
+    setBannerFile(file);
+    const preview = URL.createObjectURL(file);
+    setBannerPreview(preview);
+    setError("");
+
+    // Fazer upload automaticamente
+    setUploadingBanner(true);
+    try {
+      const url = await uploadImage(file);
+      setBannerUrl(url);
+      setSuccess("Banner carregado com sucesso!");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err: any) {
+      setError(err.message || "Erro ao enviar banner");
+      setBannerPreview("");
+      setBannerFile(null);
+    } finally {
+      setUploadingBanner(false);
     }
   }
 
@@ -481,36 +598,106 @@ export default function RestaurantSettingsPage() {
                         <p className="text-sm text-gray-600 mt-1">Preencha os detalhes da sua loja.</p>
                       </div>
 
-                      <div className="space-y-4">
+                      <div className="space-y-6">
                         {/* Upload de Logo */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-bold text-gray-700 mb-3">
                             Logo da Loja
                           </label>
+                          {logoPreview && (
+                            <div className="mb-4 relative w-40 h-40 rounded-xl overflow-hidden border-2 border-gray-200 bg-gray-50 flex items-center justify-center">
+                              <img src={logoPreview} alt="Logo preview" className="w-full h-full object-contain" />
+                              {uploadingLogo && (
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                                </div>
+                              )}
+                            </div>
+                          )}
                           <div className="flex items-center gap-4">
                             <button
                               type="button"
-                              className="px-4 py-2 border-2 border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+                              onClick={() => document.getElementById('logo-input')?.click()}
+                              disabled={uploadingLogo}
+                              className="px-5 py-2.5 border-2 border-emerald-500 rounded-xl text-sm font-semibold text-emerald-600 hover:bg-emerald-50 transition disabled:opacity-60 disabled:cursor-not-allowed"
                             >
-                              Escolher arquivo
+                              {uploadingLogo ? 'Enviando...' : 'Escolher logo'}
                             </button>
-                            <span className="text-sm text-gray-500">Nenhum arquivo escolhido</span>
+                            <input
+                              id="logo-input"
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleLogoImageChange}
+                              disabled={uploadingLogo}
+                            />
+                            <span className="text-sm text-gray-500">
+                              {logoFile ? logoFile.name : 'Nenhum arquivo escolhido'}
+                            </span>
+                            {logoPreview && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setLogoPreview("");
+                                  setLogoFile(null);
+                                  setLogoUrl("");
+                                }}
+                                className="text-red-600 hover:text-red-700 text-sm font-semibold"
+                              >
+                                Remover
+                              </button>
+                            )}
                           </div>
                         </div>
 
                         {/* Upload de Banner */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Banner da Loja
+                          <label className="block text-sm font-bold text-gray-700 mb-3">
+                            Banner da Loja (aparecerá no topo do cardápio digital)
                           </label>
+                          {bannerPreview && (
+                            <div className="mb-4 relative w-full h-40 rounded-xl overflow-hidden border-2 border-gray-200 bg-gray-50 flex items-center justify-center">
+                              <img src={bannerPreview} alt="Banner preview" className="w-full h-full object-cover" />
+                              {uploadingBanner && (
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                                </div>
+                              )}
+                            </div>
+                          )}
                           <div className="flex items-center gap-4">
                             <button
                               type="button"
-                              className="px-4 py-2 border-2 border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+                              onClick={() => document.getElementById('banner-input')?.click()}
+                              disabled={uploadingBanner}
+                              className="px-5 py-2.5 border-2 border-emerald-500 rounded-xl text-sm font-semibold text-emerald-600 hover:bg-emerald-50 transition disabled:opacity-60 disabled:cursor-not-allowed"
                             >
-                              Escolher arquivo
+                              {uploadingBanner ? 'Enviando...' : 'Escolher banner'}
                             </button>
-                            <span className="text-sm text-gray-500">Nenhum arquivo escolhido</span>
+                            <input
+                              id="banner-input"
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleBannerImageChange}
+                              disabled={uploadingBanner}
+                            />
+                            <span className="text-sm text-gray-500">
+                              {bannerFile ? bannerFile.name : 'Nenhum arquivo escolhido'}
+                            </span>
+                            {bannerPreview && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setBannerPreview("");
+                                  setBannerFile(null);
+                                  setBannerUrl("");
+                                }}
+                                className="text-red-600 hover:text-red-700 text-sm font-semibold"
+                              >
+                                Remover
+                              </button>
+                            )}
                           </div>
                         </div>
 

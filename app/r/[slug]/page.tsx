@@ -280,6 +280,19 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
       </div>
 
+      {/* Banner da Loja */}
+      {restaurant?.bannerUrl && (
+        <div className="sticky top-0 z-30 w-full">
+          <div className="w-full h-48 sm:h-64 overflow-hidden bg-gray-200">
+            <img 
+              src={restaurant.bannerUrl} 
+              alt="Banner da loja"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-sm border-b border-gray-200 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
