@@ -985,7 +985,7 @@ export default function RestaurantSettingsPage() {
                       <div className="mb-6">
                         <h2 className="text-lg font-bold text-gray-900">Dados da Empresa</h2>
                         <p className="text-sm text-gray-600 mt-1">Informações cadastrais da sua empresa.</p>
-                        <p className="text-xs text-gray-500 mt-2">Para alterar o CNPJ, nos chame no suporte.</p>
+                        <p className="text-xs text-gray-500 mt-2">Informe apenas números no CNPJ (14 dígitos).</p>
                       </div>
 
                       <div className="space-y-4">
@@ -1008,8 +1008,10 @@ export default function RestaurantSettingsPage() {
                           <input
                             type="text"
                             value={cnpj}
-                            disabled
-                            className="w-full rounded-lg border-2 border-gray-300 px-4 py-2 bg-gray-100 text-gray-600"
+                            onChange={(e) => setCnpj(e.target.value.replace(/\D/g, '').slice(0, 14))}
+                            inputMode="numeric"
+                            placeholder="00000000000000"
+                            className="w-full rounded-lg border-2 border-gray-300 px-4 py-2 outline-none focus:border-blue-500"
                           />
                         </div>
 
