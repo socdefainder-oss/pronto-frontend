@@ -2,6 +2,7 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import AsaasSeal from "@/app/components/AsaasSeal";
 
 function PendingContent() {
   const searchParams = useSearchParams();
@@ -28,6 +29,9 @@ function PendingContent() {
         >
           Voltar para início
         </Link>
+        <div className="mt-8 pt-6 border-t border-gray-100 flex justify-center">
+          <AsaasSeal variant="positive" />
+        </div>
       </div>
     </div>
   );

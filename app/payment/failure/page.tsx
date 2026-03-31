@@ -2,6 +2,7 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import AsaasSeal from "@/app/components/AsaasSeal";
 
 function FailureContent() {
   const searchParams = useSearchParams();
@@ -33,6 +34,9 @@ function FailureContent() {
           >
             Voltar para início
           </Link>
+        </div>
+        <div className="mt-8 pt-6 border-t border-gray-100 flex justify-center">
+          <AsaasSeal variant="positive" />
         </div>
       </div>
     </div>
