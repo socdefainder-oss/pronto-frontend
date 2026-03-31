@@ -264,6 +264,25 @@ export default function RestaurantSettingsPage() {
     }
   }
 
+  async function persistRestaurantImage(field: "logoUrl" | "bannerUrl", value: string) {
+    const token = getToken();
+    if (!token) throw new Error("Token não encontrado");
+
+    const response = await fetch(`${API_URL}/api/restaurants/${restaurantId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ [field]: value }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Erro ao salvar imagem da loja");
+    }
+  }
+
   async function handleLogoImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -287,8 +306,9 @@ export default function RestaurantSettingsPage() {
     setUploadingLogo(true);
     try {
       const url = await uploadImage(file);
+      await persistRestaurantImage("logoUrl", url);
       setLogoUrl(url);
-      setSuccess("Logo carregada com sucesso!");
+      setSuccess("Logo carregada e salva com sucesso!");
       setTimeout(() => setSuccess(""), 3000);
     } catch (err: any) {
       setError(err.message || "Erro ao enviar logo");
@@ -322,8 +342,9 @@ export default function RestaurantSettingsPage() {
     setUploadingBanner(true);
     try {
       const url = await uploadImage(file);
+      await persistRestaurantImage("bannerUrl", url);
       setBannerUrl(url);
-      setSuccess("Banner carregado com sucesso!");
+      setSuccess("Banner carregado e salvo com sucesso!");
       setTimeout(() => setSuccess(""), 3000);
     } catch (err: any) {
       setError(err.message || "Erro ao enviar banner");
