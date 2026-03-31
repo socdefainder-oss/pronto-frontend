@@ -14,15 +14,14 @@ export default function LoginPage() {
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
 
-  // Health check MELHORADO - múltiplas tentativas paralelas para acordar mais rápido
+  // Health check leve para acordar backend sem gerar carga desnecessária
   useEffect(() => {
     const wakeUpBackend = async () => {
       try {
-        await Promise.all([
-          fetch(`${API_URL}/api/public/health`, { method: 'GET' }).catch(() => {}),
-          fetch(`${API_URL}/api/public/health`, { method: 'GET' }).catch(() => {}),
-          fetch(`${API_URL}/api/public/health`, { method: 'GET' }).catch(() => {})
-        ]);
+        await fetch(`${API_URL}/api/public/health`, {
+          method: "GET",
+          cache: "no-store",
+        }).catch(() => {});
       } catch (e) {
         // Ignora erros do health check
       }
@@ -35,8 +34,8 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const maxRetries = 3;
-    const timeout = 90000; // 90 segundos por tentativa (total: 4.5min)
+    const maxRetries = 2;
+    const timeout = 30000; // 30 segundos por tentativa (total: ~1min)
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       setRetryCount(attempt);
@@ -73,11 +72,11 @@ export default function LoginPage() {
       } catch (err: any) {
         if (err.name === 'AbortError' && attempt < maxRetries) {
           // Timeout, mas ainda há tentativas
-          await new Promise(resolve => setTimeout(resolve, 2000)); // Aguarda 2s antes de tentar novamente
+          await new Promise(resolve => setTimeout(resolve, 1200));
           continue;
         } else if (err.name === 'AbortError') {
           // Última tentativa falhou
-          setError("Servidor não respondeu após 3 tentativas (4.5min total). O backend pode estar iniciando pela primeira vez hoje. Aguarde 1 minuto e tente novamente.");
+          setError("Servidor demorou para responder. Se ele estava inativo, aguarde alguns segundos e tente novamente.");
         } else {
           // Erro diferente de timeout (credenciais inválidas, etc)
           setError(err.message || "Erro ao fazer login");
@@ -207,7 +206,7 @@ export default function LoginPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  {retryCount > 0 ? `Tentativa ${retryCount}/3... Aguarde` : 'Entrando...'}
+                  {retryCount > 0 ? `Tentativa ${retryCount}/2... Aguarde` : "Entrando..."}
                 </span>
               ) : (
                 "Entrar"
