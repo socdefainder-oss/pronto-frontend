@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCart } from "@/app/lib/CartContext";
+import ThemeToggle from "@/app/components/ThemeToggle";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://pronto-backend-j48e.onrender.com";
 
@@ -273,21 +274,21 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 dark:bg-gray-900 pb-24 transition-colors duration-200">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 -right-40 w-96 h-96 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        <div className="absolute top-20 -right-40 w-96 h-96 bg-emerald-200 dark:bg-emerald-900 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-3xl opacity-20 dark:opacity-10"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-teal-200 dark:bg-teal-900 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-3xl opacity-20 dark:opacity-10"></div>
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-sm border-b border-gray-200 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3 w-full">
+      <header className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-200">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
             {/* Menu Hambúrguer */}
             <button
               onClick={() => setShowSidebar(!showSidebar)}
-              className="flex items-center justify-center w-10 h-10 rounded-xl border-2 border-gray-200 text-gray-700 hover:border-emerald-500 hover:bg-emerald-50 transition"
+              className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl border-2 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition"
               aria-label="Menu"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -295,10 +296,10 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
               </svg>
             </button>
 
-            <div className="h-8 w-px bg-gray-300"></div>
+            <div className="h-8 w-px bg-gray-300 dark:bg-gray-600 flex-shrink-0"></div>
 
             {restaurant?.bannerUrl ? (
-              <div className="flex-1 h-12 rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-gray-100">
+              <div className="flex-1 h-12 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600 shadow-sm bg-gray-100 dark:bg-gray-700">
                 <img
                   src={restaurant.bannerUrl}
                   alt={`Banner da loja ${restaurant?.name || ""}`}
@@ -306,9 +307,12 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
                 />
               </div>
             ) : (
-              <div className="flex-1 h-12 rounded-xl border border-dashed border-gray-300 bg-gray-50"></div>
+              <div className="flex-1 h-12 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800"></div>
             )}
           </div>
+
+          {/* Toggle dia/noite */}
+          <ThemeToggle className="flex-shrink-0" />
         </div>
       </header>
 
@@ -322,7 +326,7 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
           ></div>
 
           {/* Sidebar */}
-          <div className="fixed left-0 top-0 bottom-0 w-80 bg-white z-50 shadow-2xl animate-in slide-in-from-left">
+          <div className="fixed left-0 top-0 bottom-0 w-80 bg-white dark:bg-gray-900 z-50 shadow-2xl animate-in slide-in-from-left transition-colors duration-200">
             <div className="flex flex-col h-full">
               {/* Sidebar Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-emerald-600 to-teal-600">
@@ -339,19 +343,19 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
 
               {/* Sidebar Content */}
               <div className="flex-1 overflow-y-auto p-6">
-                <h3 className="text-sm font-bold text-gray-500 uppercase mb-4">Categorias</h3>
+                <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase mb-4">Categorias</h3>
                 <nav className="space-y-2">
                   {restaurant?.categories?.map((category: any) => (
                     category.products?.length > 0 && (
                       <button
                         key={category.id}
                         onClick={() => scrollToCategory(category.id)}
-                        className="w-full text-left px-4 py-3 rounded-xl hover:bg-emerald-50 transition flex items-center justify-between group"
+                        className="w-full text-left px-4 py-3 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition flex items-center justify-between group"
                       >
-                        <span className="font-semibold text-gray-700 group-hover:text-emerald-600">
+                        <span className="font-semibold text-gray-700 dark:text-gray-200 group-hover:text-emerald-600">
                           {category.name}
                         </span>
-                        <span className="text-xs bg-gray-100 group-hover:bg-emerald-100 group-hover:text-emerald-700 text-gray-600 px-2 py-1 rounded-full">
+                        <span className="text-xs bg-gray-100 dark:bg-gray-700 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/50 group-hover:text-emerald-700 text-gray-600 dark:text-gray-400 px-2 py-1 rounded-full">
                           {category.products.length}
                         </span>
                       </button>
@@ -360,12 +364,12 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
                   {restaurant?.productsWithoutCategory?.length > 0 && (
                     <button
                       onClick={() => scrollToCategory('outros')}
-                      className="w-full text-left px-4 py-3 rounded-xl hover:bg-emerald-50 transition flex items-center justify-between group"
+                      className="w-full text-left px-4 py-3 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition flex items-center justify-between group"
                     >
-                      <span className="font-semibold text-gray-700 group-hover:text-emerald-600">
+                      <span className="font-semibold text-gray-700 dark:text-gray-200 group-hover:text-emerald-600">
                         Outros itens
                       </span>
-                      <span className="text-xs bg-gray-100 group-hover:bg-emerald-100 group-hover:text-emerald-700 text-gray-600 px-2 py-1 rounded-full">
+                      <span className="text-xs bg-gray-100 dark:bg-gray-700 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/50 group-hover:text-emerald-700 text-gray-600 dark:text-gray-400 px-2 py-1 rounded-full">
                         {restaurant.productsWithoutCategory.length}
                       </span>
                     </button>
@@ -373,8 +377,8 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
                 </nav>
 
                 {/* Restaurant Info in Sidebar */}
-                <div className="mt-8 pt-8 border-t border-gray-200">
-                  <h3 className="text-sm font-bold text-gray-500 uppercase mb-4">Informações</h3>
+                <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+                  <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase mb-4">Informações</h3>
                   {restaurant?.address && (
                     <div className="flex items-start gap-3 mb-4">
                       <svg className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -406,12 +410,12 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
 
       {/* Category Navigation Bar - Sticky com Setas */}
       {showCategoryBar && hasProducts && (
-        <div className="sticky top-[73px] z-30 bg-white border-b border-gray-200 shadow-md">
+        <div className="sticky top-[73px] z-30 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-md transition-colors duration-200">
           <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-2">
             {/* Seta Esquerda */}
             <button
               onClick={() => scrollCategories('left')}
-              className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 hover:bg-emerald-100 text-gray-600 hover:text-emerald-600 flex items-center justify-center transition shadow-sm hover:shadow-md"
+              className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-gray-600 dark:text-gray-300 hover:text-emerald-600 flex items-center justify-center transition shadow-sm hover:shadow-md"
               aria-label="Rolar para esquerda"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -431,7 +435,7 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
                       className={`px-4 py-2 rounded-lg font-semibold transition whitespace-nowrap ${
                         activeCategory === category.id
                           ? 'bg-emerald-600 text-white shadow-md'
-                          : 'bg-gray-100 text-gray-700 hover:bg-emerald-50 hover:text-emerald-700'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-700'
                       }`}
                     >
                       {category.name}
@@ -445,7 +449,7 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
                     className={`px-4 py-2 rounded-lg font-semibold transition whitespace-nowrap ${
                       activeCategory === 'outros'
                         ? 'bg-emerald-600 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-emerald-50 hover:text-emerald-700'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-700'
                     }`}
                   >
                     Outros itens
@@ -457,7 +461,7 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
             {/* Seta Direita */}
             <button
               onClick={() => scrollCategories('right')}
-              className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 hover:bg-emerald-100 text-gray-600 hover:text-emerald-600 flex items-center justify-center transition shadow-sm hover:shadow-md"
+              className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-gray-600 dark:text-gray-300 hover:text-emerald-600 flex items-center justify-center transition shadow-sm hover:shadow-md"
               aria-label="Rolar para direita"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -471,7 +475,7 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
       {/* Content */}
       <div className="relative max-w-6xl mx-auto px-3 sm:px-4 py-5 sm:py-8">
         {/* Restaurant Info */}
-        <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-200 p-4 sm:p-8 mb-5 sm:mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-2 border-gray-200 dark:border-gray-700 p-4 sm:p-8 mb-5 sm:mb-8 transition-colors duration-200">
           <div className="flex items-center gap-3 mb-4">
             {restaurant?.logoUrl ? (
               <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl overflow-hidden shadow-lg border-2 border-emerald-200">
@@ -485,7 +489,7 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
               </div>
             )}
             <div>
-              <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">{restaurant?.name}</h1>
+              <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">{restaurant?.name}</h1>
 
               {/* Slogan motivador do restaurante */}
               {restaurant?.slogan && (
@@ -496,23 +500,23 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
                 </div>
               )}
 
-              {restaurant?.description && <p className="text-sm sm:text-base text-gray-600 mt-1">{restaurant.description}</p>}
+              {restaurant?.description && <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">{restaurant.description}</p>}
             </div>
           </div>
           {restaurant?.address && (
-            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+            <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
               <svg className="w-5 h-5 text-emerald-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <p className="text-sm sm:text-base text-gray-700">{restaurant.address}</p>
+              <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300">{restaurant.address}</p>
             </div>
           )}
         </div>
 
         {/* Menu */}
-        <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-200 p-4 sm:p-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3 mb-6 sm:mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-2 border-gray-200 dark:border-gray-700 p-4 sm:p-8 transition-colors duration-200">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3 mb-6 sm:mb-8">
             <svg className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
@@ -526,7 +530,7 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-3">Cardápio em preparação</h3>
+                  <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-3">Cardápio em preparação</h3>
               <p className="text-gray-600">O restaurante está organizando seus produtos.</p>
             </div>
           ) : (
@@ -561,10 +565,10 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
               {restaurant?.categories?.map((category: any) => (
                 category.products?.length > 0 && (
                   <div key={category.id} id={`category-${category.id}`} className="mb-8 sm:mb-12 last:mb-0 scroll-mt-36 lg:max-w-4xl lg:mx-auto">
-                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 pb-3 border-b-2 border-gray-200">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 sm:mb-6 pb-3 border-b-2 border-gray-200 dark:border-gray-700">
                       {category.name}
                     </h3>
-                    <div className="space-y-3 md:space-y-0 md:divide-y md:divide-gray-200 md:rounded-2xl md:border md:border-gray-200 md:overflow-hidden">
+                    <div className="space-y-3 md:space-y-0 md:divide-y md:divide-gray-200 dark:md:divide-gray-700 md:rounded-2xl md:border md:border-gray-200 dark:md:border-gray-700 md:overflow-hidden">
                       {category.products.map((product: any) => (
                         <ProductCard key={product.id} product={product} onOpen={() => openProductDetails(product)} />
                       ))}
@@ -575,10 +579,10 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
 
               {restaurant?.productsWithoutCategory?.length > 0 && (
                 <div id="category-outros" className="mb-8 sm:mb-12 last:mb-0 scroll-mt-36 lg:max-w-4xl lg:mx-auto">
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 pb-3 border-b-2 border-gray-200">
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 sm:mb-6 pb-3 border-b-2 border-gray-200 dark:border-gray-700">
                     Outros itens
                   </h3>
-                  <div className="space-y-3 md:space-y-0 md:divide-y md:divide-gray-200 md:rounded-2xl md:border md:border-gray-200 md:overflow-hidden">
+                  <div className="space-y-3 md:space-y-0 md:divide-y md:divide-gray-200 dark:md:divide-gray-700 md:rounded-2xl md:border md:border-gray-200 dark:md:border-gray-700 md:overflow-hidden">
                     {restaurant.productsWithoutCategory.map((product: any) => (
                       <ProductCard key={product.id} product={product} onOpen={() => openProductDetails(product)} />
                     ))}
@@ -607,12 +611,12 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
       )}
 
       {selectedProduct && (
-        <div className="fixed inset-0 z-[70] bg-white md:bg-black/60 md:flex md:items-center md:justify-center" role="dialog" aria-modal="true">
-          <div className="h-full w-full overflow-y-auto bg-white md:h-auto md:max-h-[92vh] md:max-w-2xl md:rounded-[2rem] md:shadow-2xl">
+        <div className="fixed inset-0 z-[70] bg-white dark:bg-gray-950 md:bg-black/60 dark:md:bg-black/80 md:flex md:items-center md:justify-center" role="dialog" aria-modal="true">
+          <div className="h-full w-full overflow-y-auto bg-white dark:bg-gray-900 md:h-auto md:max-h-[92vh] md:max-w-2xl md:rounded-[2rem] md:shadow-2xl transition-colors duration-200">
             <div className="relative">
               <button
                 onClick={closeProductDetails}
-                className="absolute left-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-lg transition hover:bg-white"
+                className="absolute left-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/95 dark:bg-gray-800/95 text-gray-700 dark:text-gray-200 shadow-lg transition hover:bg-white dark:hover:bg-gray-800"
                 aria-label="Fechar produto"
               >
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -628,7 +632,7 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
                     className="h-full w-full object-contain"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50">
+                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-gray-800 dark:to-gray-700">
                     <svg className="h-16 w-16 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                     </svg>
@@ -637,38 +641,38 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
               </div>
 
               <div className="px-5 pb-32 pt-5 md:px-8 md:pb-36 md:pt-7">
-                <h2 className="text-3xl font-bold leading-tight text-gray-900 md:text-4xl">{selectedProduct.name}</h2>
+                <h2 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100 md:text-4xl">{selectedProduct.name}</h2>
                 {selectedProduct.description && (
-                  <p className="mt-4 text-lg leading-8 text-gray-600 md:text-xl">{selectedProduct.description}</p>
+                  <p className="mt-4 text-lg leading-8 text-gray-600 dark:text-gray-400 md:text-xl">{selectedProduct.description}</p>
                 )}
                 {(selectedProduct.portionSize || selectedProduct.servesUpTo) && (
                   <div className="mt-4 flex flex-wrap gap-2">
                     {selectedProduct.portionSize && (
-                      <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm font-semibold border border-gray-200">
+                      <span className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-semibold border border-gray-200 dark:border-gray-600">
                         Porção: {selectedProduct.portionSize}
                       </span>
                     )}
                     {selectedProduct.servesUpTo && (
-                      <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-sm font-semibold border border-emerald-200">
+                      <span className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-sm font-semibold border border-emerald-200 dark:border-emerald-700">
                         Serve até {selectedProduct.servesUpTo} pessoa(s)
                       </span>
                     )}
                   </div>
                 )}
-                <p className="mt-6 text-2xl font-semibold text-gray-700 md:text-3xl">
-                  A partir de <span className="font-bold text-gray-900">R$ {(selectedProduct.priceCents / 100).toFixed(2).replace('.', ',')}</span>
+                <p className="mt-6 text-2xl font-semibold text-gray-700 dark:text-gray-300 md:text-3xl">
+                  A partir de <span className="font-bold text-gray-900 dark:text-gray-100">R$ {(selectedProduct.priceCents / 100).toFixed(2).replace('.', ',')}</span>
                 </p>
 
                 {selectedProduct.hasComplements && activeComplementGroups.length > 0 && (
-                  <div className="mt-8 space-y-6 border-t border-gray-200 pt-6">
+                  <div className="mt-8 space-y-6 border-t border-gray-200 dark:border-gray-700 pt-6">
                     {activeComplementGroups.map((group: any) => {
                       const selectedCount = (selectedComplementOptionIds[group.id] || []).length;
 
                       return (
                         <div key={group.id} className="space-y-3">
                           <div className="flex items-center justify-between gap-3">
-                            <h3 className="text-2xl font-bold text-gray-900">{group.title}</h3>
-                            <span className="text-sm font-semibold text-gray-600 bg-gray-100 px-3 py-1 rounded-lg">
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{group.title}</h3>
+                            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-lg">
                               Escolha de {group.minSelect} até {group.maxSelect} ({selectedCount}/{group.maxSelect})
                             </span>
                           </div>
@@ -686,13 +690,13 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
                                   onClick={() => toggleComplementOption(group.id, option.id, group.maxSelect)}
                                   className={`w-full flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition ${
                                     isSelected
-                                      ? "border-emerald-500 bg-emerald-50"
-                                      : "border-gray-200 bg-white"
+                                      ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30"
+                                      : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
                                   } ${!isAvailable ? "opacity-60 cursor-not-allowed" : "hover:border-emerald-300"}`}
                                 >
                                   <div>
-                                    <p className="text-lg font-semibold text-gray-900">{option.name}</p>
-                                    <p className="text-sm text-gray-600">+R$ {(option.priceCents / 100).toFixed(2).replace('.', ',')}</p>
+                                    <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{option.name}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">+R$ {(option.priceCents / 100).toFixed(2).replace('.', ',')}</p>
                                   </div>
                                   <div className="flex items-center gap-2">
                                     {!isAvailable && (
@@ -703,7 +707,7 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
                                     {isSelected ? (
                                       <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white text-xl">✓</span>
                                     ) : (
-                                      <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-300 text-emerald-600 text-2xl">+</span>
+                                      <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-300 dark:border-gray-500 text-emerald-600 text-2xl">+</span>
                                     )}
                                   </div>
                                 </button>
@@ -718,20 +722,20 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
               </div>
             </div>
 
-            <div className="fixed inset-x-0 bottom-0 z-[80] border-t border-gray-200 bg-white px-5 py-4 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] md:absolute md:rounded-b-[2rem] md:px-8 md:py-5">
+            <div className="fixed inset-x-0 bottom-0 z-[80] border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-5 py-4 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.4)] md:absolute md:rounded-b-[2rem] md:px-8 md:py-5 transition-colors duration-200">
               <div className="mx-auto flex max-w-2xl items-center gap-4">
-                <div className="flex items-center overflow-hidden rounded-2xl border border-emerald-200 bg-emerald-50">
+                <div className="flex items-center overflow-hidden rounded-2xl border border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/30">
                   <button
                     onClick={() => setSelectedQuantity((current) => Math.max(1, current - 1))}
-                    className="flex h-14 w-14 items-center justify-center text-3xl font-medium text-emerald-700 transition hover:bg-emerald-100"
+                    className="flex h-14 w-14 items-center justify-center text-3xl font-medium text-emerald-700 dark:text-emerald-300 transition hover:bg-emerald-100 dark:hover:bg-emerald-900"
                     aria-label="Diminuir quantidade"
                   >
                     -
                   </button>
-                  <span className="w-12 text-center text-xl font-bold text-emerald-800">{selectedQuantity}</span>
+                  <span className="w-12 text-center text-xl font-bold text-emerald-800 dark:text-emerald-200">{selectedQuantity}</span>
                   <button
                     onClick={() => setSelectedQuantity((current) => current + 1)}
-                    className="flex h-14 w-14 items-center justify-center text-3xl font-medium text-emerald-700 transition hover:bg-emerald-100"
+                    className="flex h-14 w-14 items-center justify-center text-3xl font-medium text-emerald-700 dark:text-emerald-300 transition hover:bg-emerald-100 dark:hover:bg-emerald-900"
                     aria-label="Aumentar quantidade"
                   >
                     +
@@ -751,12 +755,16 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
       )}
 
       <style jsx global>{`
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
         }
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
         }
       `}</style>
     </div>
@@ -770,21 +778,21 @@ function ProductCard({ product, onOpen }: { product: any; onOpen: () => void }) 
     <button
       type="button"
       onClick={onOpen}
-      className="w-full text-left border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg hover:border-emerald-300 transition bg-white flex items-stretch p-3 gap-3 md:border-0 md:rounded-none md:shadow-none md:hover:shadow-none md:p-4 md:gap-4"
+      className="w-full text-left border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden hover:shadow-lg hover:border-emerald-300 dark:hover:border-emerald-600 transition bg-white dark:bg-gray-800 dark:md:bg-gray-900/30 flex items-stretch p-3 gap-3 md:border-0 md:rounded-none md:shadow-none md:hover:shadow-none md:p-4 md:gap-4"
     >
       <div className="min-w-0 flex-1 flex flex-col justify-center">
-        <h4 className="font-bold text-lg md:text-xl leading-tight text-gray-900 mb-2 line-clamp-2">{product.name}</h4>
+        <h4 className="font-bold text-lg md:text-xl leading-tight text-gray-900 dark:text-gray-100 mb-2 line-clamp-2">{product.name}</h4>
         {product.description && (
-          <p className="text-gray-600 text-sm md:text-sm mb-3 line-clamp-2 md:line-clamp-2">{product.description}</p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm md:text-sm mb-3 line-clamp-2 md:line-clamp-2">{product.description}</p>
         )}
-        <div className="text-lg md:text-2xl font-bold text-gray-700 mb-1 mt-auto leading-none">
-          A partir de <span className="text-emerald-600">R$ {priceInReais}</span>
+        <div className="text-lg md:text-2xl font-bold text-gray-700 dark:text-gray-300 mb-1 mt-auto leading-none">
+          A partir de <span className="text-emerald-600 dark:text-emerald-400">R$ {priceInReais}</span>
         </div>
       </div>
 
       {/* Imagem do produto */}
       {product.imageUrl && (
-        <div className="relative w-28 h-28 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100 flex items-center justify-center md:order-last md:w-44 md:h-32 md:rounded-xl">
+        <div className="relative w-28 h-28 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center md:order-last md:w-44 md:h-32 md:rounded-xl">
           <img
             src={product.imageUrl}
             alt={product.name}

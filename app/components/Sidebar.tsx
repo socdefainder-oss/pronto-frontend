@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { clearToken, getToken } from "../lib/api";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Sidebar() {
   const params = useParams();
@@ -255,29 +256,29 @@ export default function Sidebar() {
       <aside
         className={`
           fixed lg:static inset-y-0 left-0 z-40
-          w-64 bg-white border-r border-gray-200 flex flex-col min-h-screen
+          w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col min-h-screen
           transform transition-transform duration-300 ease-in-out
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
         {/* Logo */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <Link href="/app" className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
               <span className="text-white font-bold text-xl">P</span>
             </div>
-            <span className="text-xl font-bold text-gray-900">pronto</span>
+            <span className="text-xl font-bold text-gray-900 dark:text-gray-100">pronto</span>
           </Link>
           {restaurantName && (
             <div className="relative mt-2 space-y-2">
               {/* Quadrante do nome do restaurante */}
               <button
                 onClick={() => setShowRestaurantDropdown(!showRestaurantDropdown)}
-                className="w-full px-3 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg hover:border-emerald-300 transition-colors group"
+                className="w-full px-3 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 border border-emerald-200 dark:border-emerald-700 rounded-lg hover:border-emerald-300 transition-colors group"
               >
                 <p className="text-xs text-emerald-600 font-medium mb-0.5">Gerenciando:</p>
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-bold text-gray-900 truncate" title={restaurantName}>
+                  <p className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate" title={restaurantName}>
                     {restaurantName}
                   </p>
                   <svg 
@@ -333,7 +334,7 @@ export default function Sidebar() {
               {/* Dropdown */}
               {showRestaurantDropdown && restaurants.length > 1 && (
                 <div className="fixed inset-0 z-[100]" onClick={() => setShowRestaurantDropdown(false)}>
-                  <div className="absolute top-20 left-4 right-4 bg-white border border-gray-200 rounded-lg shadow-2xl max-h-[70vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                  <div className="absolute top-20 left-4 right-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-2xl max-h-[70vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                     <div className="py-1">
                       <p className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                         Trocar para:
@@ -342,7 +343,7 @@ export default function Sidebar() {
                         <Link
                           key={restaurant.id}
                           href={`/app/restaurant/${restaurant.id}`}
-                          className="block px-3 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                          className="block px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-700 transition-colors"
                           onClick={() => setShowRestaurantDropdown(false)}
                         >
                           <div className="flex items-center gap-2">
@@ -352,10 +353,10 @@ export default function Sidebar() {
                         </Link>
                       ))}
                     </div>
-                    <div className="border-t border-gray-200 py-1">
+                    <div className="border-t border-gray-200 dark:border-gray-700 py-1">
                       <Link
                         href="/app"
-                        className="block px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+                        className="block px-3 py-2 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                         onClick={() => setShowRestaurantDropdown(false)}
                       >
                         <div className="flex items-center gap-2">
@@ -388,12 +389,12 @@ export default function Sidebar() {
                         onClick={() => toggleMenu(item.label)}
                         className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-colors ${
                           active
-                            ? "bg-emerald-50 text-emerald-700 font-semibold"
-                            : "text-gray-700 hover:bg-gray-50"
+                            ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-semibold"
+                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <span className={active ? "text-emerald-600" : "text-gray-500"}>
+                          <span className={active ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500 dark:text-gray-400"}>
                             {item.icon}
                           </span>
                           <span className="text-sm">{item.label}</span>
@@ -415,8 +416,8 @@ export default function Sidebar() {
                                 href={subItem.href}
                                 className={`block px-4 py-2 text-sm rounded-lg transition-colors ${
                                   pathname.includes('settings')
-                                    ? "text-emerald-700 hover:bg-emerald-50"
-                                    : "text-gray-600 hover:bg-gray-50"
+                                    ? "text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
+                                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                                 }`}
                               >
                                 {subItem.label}
@@ -432,11 +433,11 @@ export default function Sidebar() {
                         href={item.href}
                         className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                           active
-                            ? "bg-emerald-50 text-emerald-700 font-semibold"
-                            : "text-gray-700 hover:bg-gray-50"
+                            ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-semibold"
+                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                         }`}
                       >
-                        <span className={active ? "text-emerald-600" : "text-gray-500"}>
+                        <span className={active ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500 dark:text-gray-400"}>
                           {item.icon}
                         </span>
                         <span className="text-sm">{item.label}</span>
@@ -449,8 +450,8 @@ export default function Sidebar() {
                                 href={subItem.href}
                                 className={`block px-4 py-2 text-sm rounded-lg transition-colors ${
                                   isActive(subItem.href)
-                                    ? "bg-emerald-50 text-emerald-700 font-medium"
-                                    : "text-gray-600 hover:bg-gray-50"
+                                    ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-medium"
+                                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                                 }`}
                               >
                                 {subItem.label}
@@ -468,12 +469,16 @@ export default function Sidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-2 px-4">
+            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Aparência</span>
+            <ThemeToggle />
+          </div>
           <Link
             href="/app"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors mb-2"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors mb-2"
           >
-            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
             <span className="text-sm">Meus Restaurantes</span>
