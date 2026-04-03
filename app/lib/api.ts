@@ -11,10 +11,14 @@ export function getToken() {
 
 export function setToken(token: string) {
   localStorage.setItem("pronto_token", token);
+  // Cookie lido pelo middleware (Edge Runtime não acessa localStorage)
+  document.cookie = "pronto_auth=1; path=/; SameSite=Lax; max-age=604800"; // 7 dias
 }
 
 export function clearToken() {
   localStorage.removeItem("pronto_token");
+  // Remove o cookie de presença também
+  document.cookie = "pronto_auth=; path=/; SameSite=Lax; max-age=0";
 }
 
 export async function api(path: string, options: RequestInit = {}) {
