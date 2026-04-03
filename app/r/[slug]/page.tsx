@@ -160,6 +160,17 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
     }
   };
 
+  const scrollBanners = (direction: 'left' | 'right') => {
+    const container = document.getElementById('banner-scroll-container');
+    if (container) {
+      const scrollAmount = Math.min(container.clientWidth * 0.9, 360);
+      container.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const openProductDetails = (product: any) => {
     setSelectedProduct(product);
     setSelectedQuantity(1);
@@ -537,28 +548,64 @@ export default function PublicRestaurantPage({ params }: { params: { slug: strin
             <>
               {/* Banners promocionais */}
               {banners.length > 0 && (
-                <div className="mb-8 space-y-4">
-                  {banners.map((banner) => (
-                    <div
-                      key={banner.id}
-                      className="rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition cursor-pointer transform hover:scale-[1.02] duration-200"
-                      onClick={() => banner.linkUrl && window.open(banner.linkUrl, '_blank')}
-                    >
-                      <div className="w-full h-48 md:h-64 bg-gray-100 flex items-center justify-center">
-                        <img
-                          src={banner.imageUrl}
-                          alt={banner.title}
-                          className="w-full h-full object-contain"
-                        />
-                      </div>
-                      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-4">
-                        <h3 className="text-white font-bold text-xl">{banner.title}</h3>
-                        {banner.description && (
-                          <p className="text-emerald-50 text-sm mt-1">{banner.description}</p>
-                        )}
-                      </div>
+                <div className="mb-8 sm:mb-10">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Destaques principais</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Passe para o lado para ver todas as ofertas</p>
                     </div>
-                  ))}
+                    {banners.length > 1 && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => scrollBanners('left')}
+                          className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 shadow-sm transition hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-600"
+                          aria-label="Ver banners anteriores"
+                        >
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => scrollBanners('right')}
+                          className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 shadow-sm transition hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-600"
+                          aria-label="Ver próximos banners"
+                        >
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div id="banner-scroll-container" className="overflow-x-auto scrollbar-hide scroll-smooth">
+                    <div className="flex gap-4 min-w-max pr-1">
+                      {banners.map((banner) => (
+                        <button
+                          key={banner.id}
+                          type="button"
+                          className="w-[260px] sm:w-[300px] flex-shrink-0 overflow-hidden rounded-[1.75rem] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-left shadow-lg transition duration-200 hover:-translate-y-1 hover:shadow-2xl"
+                          onClick={() => banner.linkUrl && window.open(banner.linkUrl, '_blank')}
+                        >
+                          <div className="h-40 sm:h-44 bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                            <img
+                              src={banner.imageUrl}
+                              alt={banner.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-4">
+                            <h4 className="text-white font-bold text-lg leading-tight line-clamp-2">{banner.title}</h4>
+                            {banner.description && (
+                              <p className="text-emerald-50 text-sm mt-1 line-clamp-2">{banner.description}</p>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
 
