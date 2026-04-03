@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { setToken } from "../lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -59,7 +60,8 @@ export default function LoginPage() {
         }
 
         const data = await res.json();
-        localStorage.setItem("pronto_token", data.token);
+        // Configura o token E o cookie pronto_auth (necessário para middleware Edge)
+        setToken(data.token);
         localStorage.setItem("pronto_user", JSON.stringify(data.user));
 
         // Redireciona admin para painel admin, usuários normais para /app
