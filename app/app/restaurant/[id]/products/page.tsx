@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { api, getToken } from "../../../../lib/api";
+import { api, getToken, API_URL } from "../../../../lib/api";
 
 type Product = {
   id: string;
@@ -125,7 +125,7 @@ export default function ProductsPage() {
 
     } catch (err: any) {
       console.error("Erro ao carregar dados:", err);
-      setError("Erro de conexão ao carregar dados. Verifique sua internet.");
+      setError(err?.message || "Erro ao carregar dados do cardápio");
     } finally {
       setLoading(false);
     }
@@ -466,16 +466,27 @@ export default function ProductsPage() {
     }
 
     try {
-      await api(`/api/catalog/products/${productId}`, {
+      const response = await fetch(`${API_URL}/api/catalog/products/${productId}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
 
-      setSuccess("Produto excluído com sucesso!");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMsg = errorData?.error || "Erro ao excluir produto";
+        throw new Error(errorMsg);
+      }
+
+      const data = await response.json();
+      setSuccess(data?.message || "Produto excluído com sucesso!");
       loadData();
 
     } catch (err: any) {
       console.error("Erro delete:", err);
-      setError(err.message);
+      setError(err.message || "Erro ao excluir produto");
     }
   }
 

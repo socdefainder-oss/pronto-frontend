@@ -152,26 +152,32 @@ export default function ProductsPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (productsRes.ok) {
-        const data = await productsRes.json();
-        setProducts(data.products || []);
+      if (!productsRes.ok) {
+        const data = await productsRes.json().catch(() => ({}));
+        throw new Error(data?.error?.message || data?.error || "Sem permissão para carregar produtos desta loja");
       }
+
+      const productsData = await productsRes.json();
+      setProducts(productsData.products || []);
 
       // Load categories
       const categoriesRes = await fetch(`${API_URL}/api/catalog/categories/${restaurantId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (categoriesRes.ok) {
-        const data = await categoriesRes.json();
-        const cats = data.categories || [];
-        // Count products per category
-        const catsWithCount = cats.map((cat: Category) => ({
-          ...cat,
-          productCount: (data.products || []).filter((p: Product) => p.categoryId === cat.id).length
-        }));
-        setCategories(catsWithCount);
+      if (!categoriesRes.ok) {
+        const data = await categoriesRes.json().catch(() => ({}));
+        throw new Error(data?.error?.message || data?.error || "Sem permissão para carregar categorias desta loja");
       }
+
+      const categoriesData = await categoriesRes.json();
+      const cats = categoriesData.categories || [];
+      // Count products per category
+      const catsWithCount = cats.map((cat: Category) => ({
+        ...cat,
+        productCount: (productsData.products || []).filter((p: Product) => p.categoryId === cat.id).length
+      }));
+      setCategories(catsWithCount);
 
     } catch (err: any) {
       setError("Erro ao carregar dados: " + err.message);
@@ -360,16 +366,24 @@ export default function ProductsPage() {
     try {
       const res = await fetch(`${API_URL}/api/catalog/products/${productId}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
 
-      if (!res.ok) throw new Error("Erro ao excluir produto");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        const errorMsg = errorData?.error || "Erro ao excluir produto";
+        throw new Error(errorMsg);
+      }
 
-      setSuccess("Produto excluído com sucesso!");
+      const data = await res.json();
+      setSuccess(data?.message || "Produto excluído com sucesso!");
       loadData();
 
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "Erro ao excluir produto");
     }
   }
 
